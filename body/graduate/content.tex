@@ -150,6 +150,31 @@ AdaAttN的总体流程如下：首先从浅层到深层计算包含内容和风�
 \subsection{基于隐式神经辐射场表示的风格迁移方法}
 相比而言，神经辐射场NeRF的提出很好地改善了几何重建领域的新视图合成质量差、表示方式不灵活、训练较慢等问题，具有重要的意义。
 为了更有利于理解，本文拟先对该方法进行一个全面的介绍，然后再介绍基于NeRF表示的风格迁移方法研究现状。
+
+
+%2.2.2.1
+\paragraph{NeRF方法介绍}
+NeRF方法由谷歌高级研究科学家Jon Barron在2020年首次提出，是一种基于深度学习的三维场景重建和渲染方法，它通过神经网络模拟场景的连续体积密度和颜色，
+从而实现从二维图像数据中恢复出逼真的三维场景。NeRF的核心在于使用一系列从不同角度拍摄的图片来训练一个小型的神经网络，
+该网络能够预测从任意视角观看场景时的体积密度和颜色。把物体看作一团可以自发光的粒子，这些粒子具有颜色C，密度σ两个属性。
+使用现有的照片对体空间内粒子的密度和颜色进行预测，保存这些信息。在渲染其他视角时，使用这些信息（粒子的密度，颜色）进行推理，就能得到新视角下该场景的照片。NeRF的流程如\autoref{fig:nerf_show}所示：
+\par 具体来说，NeRF要解决的问题就两个：
+% \par 1. 如何通过现有的照片得到空间中密度与颜色的分布。
+% \par 2. 如何利用这些数据，得到任意角度的照片。
+\begin{enumerate}
+    \item 如何通过现有的照片得到空间中密度与颜色的分布。
+    \item 如何利用这些数据，得到任意角度的照片。
+\end{enumerate}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/nerf.png}
+    \caption{\label{fig:nerf_show}NeRF方法的流程图}
+\end{figure}
+
+
+
+对于问题2，可以认为，从某一点看过去，这一点的颜色应该由达到这一点的光线上累积的颜色决定，想象每条光线路径上经过一个个小球到达最终像素上，
+最终这些小球以自己的属性参与影响像素的颜色，这一计算可以用\autoref{equ:nerf_color_predict}表示：
 % \begin{figure}[htbp]
 %     \centering
 %     \includegraphics[width=\linewidth]{pics/pic_3.1.1}
@@ -162,7 +187,14 @@ AdaAttN的总体流程如下：首先从浅层到深层计算包含内容和风�
 %     \caption{\label{fig:pic_3.1.2}三种方法在计算上的差别示意图}
 % \end{figure}
 
+% t_n
 
+\begin{equation}
+    \label{equ:nerf_color_predict}
+    C^{p\text{redict}}(\mathbf{r})=\int_{t_n}^{t_f}T(t)\sigma(\mathbf{r}(t))\mathbf{c}(\mathbf{r}(t),\mathbf{d})dt
+\end{equation}
+其中$t_n$和$t_f$分别代表相机光线的近界和远界，$\mathbf{r}(t)=o+td$表示光线，$\sigma(t)$表示t处的密度，$\mathbf{c}(\mathbf{r}(t),\mathbf{d})$表示在$\mathbf{r}(t)$处以视角d看过去的颜色值，
+$T(t)=\exp{(-\int_{t_n}^t\sigma(\mathbf{r}(s))ds)}$表示t处的不透明度。
 
 
 
@@ -204,12 +236,6 @@ AdaAttN的总体流程如下：首先从浅层到深层计算包含内容和风�
 \end{table}
 
 
-\par 如\autoref{equ:sample}，这是一个公式
-
-\begin{equation}
-    \label{equ:sample}
-    A=\overbrace{(a+b+c)+\underbrace{i(d+e+f)}_{\text{虚数}}}^{\text{复数}}
-\end{equation}
 
 \chapter{另一章}
 
