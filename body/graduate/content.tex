@@ -448,6 +448,35 @@ $\{\Phi_{CM(i)}^l(\vec{s})\}$和$\{\Phi_j^l(\vec{s})\}$
     \label{equ:equ_cal_ssim_lxy}
     \mathrm{l(x,y)=\frac{2\mu_x\mu_y+C_1}{\mu_x^2+\mu_y^2+C_1}}
 \end{equation}
+其中\(\mu_\mathrm{x}=\frac{1}{\mathrm{N}}\sum_{\mathrm{i}=1}^\mathrm{N} \mathrm{x_i}, \mu_\mathrm{y}=\frac{1}{\mathrm{N}}\sum_{\mathrm{i}=1}^\mathrm{N} \mathrm{y_i}, \mathrm{C_1}\)
+是一个防止分母为零的常数。对比度相似性的定义如\autoref{equ:equ_cal_ssim_cxy}所示：
+\begin{equation}
+    \label{equ:equ_cal_ssim_cxy}
+    \mathrm{c}(\mathbf{x},\mathbf{y})=\frac{2\sigma_\mathrm{x}\sigma_\mathrm{y}+\mathrm{C}_2}{\sigma_\mathrm{x}^2+\sigma_\mathrm{y}^2+\mathrm{C}_2}
+\end{equation}
+其中，\(\sigma_{\mathrm{x}}=\left(\frac1{\mathrm{N}-1}\Sigma_{\mathrm{i}=1}^{\mathrm{N}}\left(\mathrm{x}_{\mathrm{i}}-\mu_{\mathrm{x}}\right)^{2}\right)^{\frac12},\sigma_{\mathrm{y}}=\left(\frac1{\mathrm{N}-1}\Sigma_{\mathrm{i}=1}^{\mathrm{N}}\left(\mathrm{y}_{\mathrm{i}}-\mu_{\mathrm{y}}\right)^{2}\right)^{\frac12},C_{2}\)
+的作用和\(C_1\)相同。结构相似性的定义如\autoref{equ:equ_cal_ssim_sxy}所示：
+\begin{equation}
+    \label{equ:equ_cal_ssim_sxy}
+    \mathrm{s(x,y)=\frac{\sigma_{xy}+C_3}{\sigma_x\sigma_y+C_3}}
+\end{equation}
+其中，\(C_3\)的作用和\(C_2、C_1\)相同，都是为了防止分母出现零，而\(\sigma_{\mathrm{xy}}\)是x和y的协方差，其可以按\autoref{equ:equ_cal_ssim_covxy}计算：
+\begin{equation}
+    \label{equ:equ_cal_ssim_covxy}
+    \sigma_{\mathrm{xy}}=\frac1{\mathrm{N}-1}\sum_{\mathrm{i}=1}^{\mathrm{N}}(\mathrm{x_i}-\mu_\mathrm{x})(\mathrm{y_i}-\mu_\mathrm{y})
+\end{equation}
+有了上述三个公式后，\(\mathrm{SSIM}(\mathbf{x},\mathbf{y})\)可以按\autoref{equ:equ_cal_ssim}计算：
+\begin{equation}
+    \label{equ:equ_cal_ssim}
+    \mathrm{SSIM}(\mathbf{x},\mathbf{y})=[\mathrm{l}(\mathbf{x},\mathbf{y})]^\alpha\cdot[\mathrm{c}(\mathbf{x},\mathbf{y})]^\beta\cdot[\mathrm{s}(\mathbf{x},\mathbf{y})]^\gamma 
+\end{equation}
+其中的\(\alpha,\beta,\gamma \)分别用于调控三个部分的权重。特别地，当\(\alpha{=}\beta{=}\gamma{=}1\text{,且}C_3=C_2/2\)的时候，
+SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是计算SSIM常用的形式。需要指出，SSIM计算实在每个图像局部块上，最后需要pooling来得出整幅图像分数，
+论文采用的是简单的average pooling方式，即求平均值。
+\begin{equation}
+    \label{equ:equ_cal_ssim_simplified}
+    \mathrm{SSIM}(\mathbf{x},\mathbf{y})=\frac{(2\mu_\mathrm{x}\mu_\mathrm{y}+\mathrm{C}_1)(2\sigma_\mathrm{xy}+\mathrm{C}_2)}{(\mu_\mathrm{x}^2+\mu_\mathrm{y}^2+\mathrm{C}_1)(\sigma_\mathrm{x}^2+\sigma_\mathrm{y}^2+\mathrm{C}_2)}
+\end{equation}
 
 % 我们可以用includegraphics来插入现有的jpg等格式的图片，
 % 如\autoref{fig:zju-logo}所示。
