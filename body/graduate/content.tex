@@ -478,19 +478,57 @@ SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是
     \mathrm{SSIM}(\mathbf{x},\mathbf{y})=\frac{(2\mu_\mathrm{x}\mu_\mathrm{y}+\mathrm{C}_1)(2\sigma_\mathrm{xy}+\mathrm{C}_2)}{(\mu_\mathrm{x}^2+\mu_\mathrm{y}^2+\mathrm{C}_1)(\sigma_\mathrm{x}^2+\sigma_\mathrm{y}^2+\mathrm{C}_2)}
 \end{equation}
 
-% 我们可以用includegraphics来插入现有的jpg等格式的图片，
-% 如\autoref{fig:zju-logo}所示。
+\par ArtFID指标~\cite{wright2022artfid}是一个综合考虑内容保存和样式匹配这两个因素的计算指标，
+用$X_c$表示内容图集，$X_s$表示风格图集，$X_g$表示用某种方法生成的风格化图集。
+本算法需要使用到LPIPS指标~\cite{zhang2018unreasonable}来计算内容图像和风格化图像之间的内容距离。
+我们把这一指标记录为\(LPIPS(X_c^{(i)},X_g^{(i)})\)。LPIPS的计算公式不是简单的数学公式，而是通过深度神经网络来实现的。
+通常，LPIPS模型使用两幅图像作为输入，然后输出它们之间的感知相似性分数。
+LPIPS模型的具体架构和参数是经过大规模训练得到的，用于捕捉图像的感知信息，其计算方式如\autoref{alg:alg_lpips}所示：
+\begin{algorithm}[H]
+    \begin{algorithmic} % enter the algorithmic environment
+        \REQUIRE $pytorch$
+        \ENSURE $pic1 \quad exists, \quad pic2 \quad exists$
+        \STATE $lpips\_model = models.lpips.LPIPS(net='InceptionNet')$
+        \STATE $image1 = Image.open('pic1').convert('RGB')$
+        \STATE $image2 = Image.open('pic2').convert('RGB')$
+        \STATE $preprocess = transforms.Compose([$
+        \STATE $\quad \quad \quad \quad transforms.Resize(),transforms.ToTensor(),$
+        \STATE $])$
+        \STATE $image1 = preprocess(image1).unsqueeze(0)$
+        \STATE $image2 = preprocess(image2).unsqueeze(0)$
+        \STATE $similarity\_score = lpips\_model(image1, image2)$
+        
+    \end{algorithmic}
+    \caption{\label{alg:alg_lpips}LPIPS的计算算法}
+\end{algorithm}
+\par 在本文操作中一般使用Inception特征。为了测量风格图像$X_s$和风格化图像$X_g$之间的样式匹配，采用FID指标~\cite{heusel2017gans}计算测量这两个特征分布之间的距离，
+计算方法如\autoref{equ:equ_cal_fid}所示，
+其中\((\mu_s,\Sigma_s)\text{和}(\mu_g,\Sigma_g)\)分别是风格图和风格化图像的Inception特征~\cite{szegedy2016rethinking}的均值和协方差。
+\begin{equation}
+    \label{equ:equ_cal_fid}
+    \mathrm{FID}(X_s,X_g)=\parallel\mu_s-\mu_g\parallel_2^2+\mathrm{Tr}(\Sigma_s+\Sigma_g-2(\Sigma_s\Sigma_g)^{\frac12})
+\end{equation}
+在获得了内容保存的度量和样式匹配的度量之后，将这些度量结合起来形成ArtFID，如\autoref{equ:equ_cal_artfid}所示：
+\begin{equation}
+    \label{equ:equ_cal_artfid}
+    \mathrm{ArtFID}(X_g,X_c,X_s)=\left(1+\frac{1}{N}\sum_{i=1}^{N} LPIPS(X_c^{(i)},X_g^{(i)})\right)\cdot\left(1+\mathrm{FID}(X_s,X_g)\right)
+\end{equation}
+\par 随后本文将对3D场景风格化的两个一致性指标进行介绍。这个指标是Lai等人~\cite{lai2018learning}提出的用于约束视频一致性的指标，
+也可用在3D场景渲染的结果中以衡量渲染的多视角一致性。其中短程一致性指标使用相邻两帧进行计算，
+长程一致性指标使用互相间隔7帧的两帧进行计算。其计算细节如下：给定从角度u和角度v渲染出的风格化图像\(\tilde{\mathcal{J}}_u\text{和}\tilde{\mathcal{J}}_v\)
+和对应的非风格化图像\(J_u\text{和}J_v\)，首先使用\(J_u\text{和}J_v\)计算光流和遮挡掩码$\mathcal{O}$，在本文中使用预训练的FlowNet2.0~\cite{ilg2017flownet}来计算光流，
+根据计算好的光流，把v角度的风格化图像\(\tilde{\boldsymbol{\jmath}}_{\boldsymbol{v}}\)扭曲到u角度的风格化图像\(\tilde{\boldsymbol{\jmath}}_{\boldsymbol{u}}\)
+，最终获得的一致性指标计算方式如\autoref{equ:equ_cal_consistency}所示：
+其中\((\mu_s,\Sigma_s)\text{和}(\mu_g,\Sigma_g)\)分别是风格图和风格化图像的Inception特征~\cite{szegedy2016rethinking}的均值和协方差。
+\begin{equation}
+    \label{equ:equ_cal_consistency}
+    \mathcal{E}_\text{consistency}{(\tilde{J}_u,\tilde{J}_v)}=\frac1{|\mathcal{O}|}\left\|\tilde{J}_u-\check{J}_u\right\|_2^2
+\end{equation}
+其中$|\mathcal{O}|$代表着$\mathcal{O}$中未被遮挡的像素个数。
 
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=.3\linewidth]{logo/zju}
-%     \caption{\label{fig:zju-logo}浙江大学LOGO}
-% \end{figure}
 
-
-
-
-
+\section{本章小结}
+本章首先介绍了风格迁移的含义，然后按照二维风格迁移和三维风格迁移分别对现有的研究进行了分类和总结，介绍了一些经典的算法和前人的研究成果，同时也对对比学习的理论进行了一些概述。然后本文介绍了风格迁移质量的一些评价指标。本章的介绍为下文阐述创新之处提供了完备的理论前提。 
 % \par 如\autoref{tab:sample}所示，这是一张自动调节列宽的表格。
 
 % \begin{table}[htbp]
@@ -517,29 +555,29 @@ SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是
 
 \chapter{再一章}
 
-\par 如\autoref{alg:sample}，这是一个算法
+% \par 如\autoref{alg:sample}，这是一个算法
 
-\begin{algorithm}[H]
-    \begin{algorithmic} % enter the algorithmic environment
-        \REQUIRE $n \geq 0 \vee x \neq 0$
-        \ENSURE $y = x^n$
-        \STATE $y \Leftarrow 1$
-        \IF{$n < 0$}
-            \STATE $X \Leftarrow 1 / x$
-            \STATE $N \Leftarrow -n$
-        \ELSE
-            \STATE $X \Leftarrow x$
-            \STATE $N \Leftarrow n$
-        \ENDIF
-        \WHILE{$N \neq 0$}
-            \IF{$N$ is even}
-                \STATE $X \Leftarrow X \times X$
-                \STATE $N \Leftarrow N / 2$
-            \ELSE[$N$ is odd]
-                \STATE $y \Leftarrow y \times X$
-                \STATE $N \Leftarrow N - 1$
-            \ENDIF
-        \ENDWHILE
-    \end{algorithmic}
-    \caption{\label{alg:sample}算法样例}
-\end{algorithm}
+% \begin{algorithm}[H]
+%     \begin{algorithmic} % enter the algorithmic environment
+%         \REQUIRE $n \geq 0 \vee x \neq 0$
+%         \ENSURE $y = x^n$
+%         \STATE $y \Leftarrow 1$
+%         \IF{$n < 0$}
+%             \STATE $X \Leftarrow 1 / x$
+%             \STATE $N \Leftarrow -n$
+%         \ELSE
+%             \STATE $X \Leftarrow x$
+%             \STATE $N \Leftarrow n$
+%         \ENDIF
+%         \WHILE{$N \neq 0$}
+%             \IF{$N$ is even}
+%                 \STATE $X \Leftarrow X \times X$
+%                 \STATE $N \Leftarrow N / 2$
+%             \ELSE[$N$ is odd]
+%                 \STATE $y \Leftarrow y \times X$
+%                 \STATE $N \Leftarrow N - 1$
+%             \ENDIF
+%         \ENDWHILE
+%     \end{algorithmic}
+%     \caption{\label{alg:sample}算法样例}
+% \end{algorithm}
