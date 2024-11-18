@@ -213,19 +213,22 @@ $T(t)=\exp{(-\int_{t_n}^t\sigma(\mathbf{r}(s))ds)}$表示t处的不透明度。
 使用 $\mathrm{MSE}(\boldsymbol{C}^{\text{predict}} - \boldsymbol{C})$ 作为约束进行训练。
 但是，考虑到输入的信息粒度太粗，直接在神经网络中输入坐标与角度信息只有6维数据，网络可能无法提取到一些比较细微的差别，训练效果并不好。
 比如对于同一点，不同角度看过去，这个角度值的变化可能并不大，但是看到的颜色差别很大。
-% \par 为了提取到高频信息、增强模型的学习和表示能力，需要对输入进行增强。NeRF采用了位置编码的方法，将3维空间位置坐标和角度信息使用正弦余弦函数进行编码，增强后输入变为如\autoref{equ:nerf_pe}所示：
+\par 为了提取到高频信息、增强模型的学习和表示能力，需要对输入进行增强。NeRF采用了位置编码的方法，将3维空间位置坐标和角度信息使用正弦余弦函数进行编码，
+增强后输入变为如\autoref{equ:nerf_pe}所示：
+
 % \begin{equation}
 %     \label{equ:nerf_pe}
-%     (x,y,z)\to(x,y,z,sin(2^0,x),sin(2^0,y),sin(2^0,z),cos(2^0,x),
-%     % \\cos(2^0,y),cos(2^0,z)...sin(2^{n-1},x),sin(2^{n-1},y),sin(2^{n-1},z),
-%     % \\cos(2^{n-1},x),cos(2^{n-1},y),cos(2^{n-1},z)
-%     % \\(\theta,\phi)\to(\theta,\phi,\sin{(2^0,\theta)},\sin{(2^0,\phi)},\cos{(2^0,\theta)},\cos{(2^0,\phi)},...
-%     % \\sin(2^{m-1},\theta),sin(2^{m-1},\phi),cos(2^{n-1},\theta),cos(2^{n-1},\phi))
-
+%     (x,y,z)\to(x,y,z,sin(2^0,x),sin(2^0,y),sin(2^0,z),cos(2^0,x),cos(2^0,y),cos(2^0,z),...sin(2^{n-1},x),sin(2^{n-1},y),sin(2^{n-1},z),cos(2^{n-1},x),cos(2^{n-1},y),cos(2^{n-1},z)(\theta,\phi)\to(\theta,\phi,\sin{(2^0,\theta)},\sin{(2^0,\phi)},\cos{(2^0,\theta)},\cos{(2^0,\phi)},...sin(2^{m-1},\theta),sin(2^{m-1},\phi),cos(2^{n-1},\theta),cos(2^{n-1},\phi))
 % \end{equation}
-
-
-
+\begin{equation}
+    \label{equ:nerf_pe}
+    \begin{aligned}
+        (x,y,z) \to & (x,y,z, \sin(2^0 x), \sin(2^0 y), \sin(2^0 z), \cos(2^0 x), \cos(2^0 y), \cos(2^0 z), \ldots, \\
+                    & \sin(2^{n-1} x), \sin(2^{n-1} y), \sin(2^{n-1} z), \cos(2^{n-1} x), \cos(2^{n-1} y), \cos(2^{n-1} z)) \\
+        (\theta,\phi) \to & (\theta,\phi, \sin(2^0 \theta), \sin(2^0 \phi), \cos(2^0 \theta), \cos(2^0 \phi), \ldots, \\
+                          & \sin(2^{m-1} \theta), \sin(2^{m-1} \phi), \cos(2^{m-1} \theta), \cos(2^{m-1} \phi))
+    \end{aligned}
+\end{equation}
 
 
 
