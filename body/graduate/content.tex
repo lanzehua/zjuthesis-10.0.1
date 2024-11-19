@@ -360,7 +360,7 @@ CLIP模型的核心思想是通过最大化图像表示与其相应文本描述�
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/clip_introduction.png}
-    \caption{\label{fig:clip_intro}3DGS方法的管线图}
+    \caption{\label{fig:clip_intro}CLIP方法示意图}
 \end{figure}
 \par 训练和优化：在定义损失函数后，模型会使用大量数据集（主要是未标记的数据集）进行训练。这个训练过程是迭代的，涉及不断更新模型的参数以最小化损失函数。这种迭代优化逐步细化所学习到的表示，从而增强模型有效区分和区分相似和不相似实例的能力。
 \par 在风格迁移的领域，Chen等人~\cite{chen2021artistic}首先基于预训练的VGG模型构建正样本和负样本，以学习风格化到风格化的关系。Zhang等人~\cite{zhang2022domain}全面介绍了使用视觉特征进行风格表示的对比学习，以表示任意风格转移的风格。Wu等人~\cite{wu2022ccpl}设计了一种通用的对比相干保持损失来学习局部斑块。
@@ -441,7 +441,7 @@ $\{\Phi_{CM(i)}^l(\vec{s})\}$和$\{\Phi_j^l(\vec{s})\}$
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/ssim_cal.png}
-    \caption{\label{fig:img_ssim_cal}3DGS方法的管线图}
+    \caption{\label{fig:img_ssim_cal}SSIM计算示意图}
 \end{figure}
 在该图中的亮度相似性的定义如\autoref{equ:equ_cal_ssim_lxy}所示：
 \begin{equation}
@@ -826,7 +826,7 @@ GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别�
 
 \section{实验设计和参数设定}
 \subsection{实验环境配置}
-本算法基于Python语言和Pytorch~\cite{paszke2019pytorch}深度学习框架实现，实验环境中的硬件配置信息和软件版本信息如\autoref{tab:tab_hardware}所示。
+本算法基于Python语言和Pytorch~\cite{paszke2019pytorch}深度学习框架实现，实验环境中的硬件配置信息和软件版本信息如\autoref{tab:tab_hardware}和\autoref{tab:tab_software}所示。
 
 
 %改表格左右竖线可以再tabularx改，然后横线就看加不加hline
@@ -836,13 +836,114 @@ GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别�
     \begin{tabularx}{\linewidth}{c|X<{\centering}}
         \hline
         硬件 & 信息 \\ \hline
-        架构 & X86-64 \\ \hline
+        架构 & X86\_64 \\ \hline
         CPU & Intel 酷睿12th Gen Intel(R) Core(TM) i7-12700F \\ \hline
         GPU & NVIDIA GeForce RTX 3090，24GB \\ \hline
         内存 & 512GB \\ \hline
     \end{tabularx}
 \end{table}
+\begin{table}[htbp]
+    \caption{\label{tab:tab_software}硬件配置信息}
+    \begin{tabularx}{\linewidth}{c|X<{\centering}}
+        \hline
+        操作系统 & Linux 6.5.0-35-generic \#35~22.04.1-Ubuntu \\ \hline
+        NVIDIA驱动 & 535.171.04 \\ \hline
+        CUDA & V11.8.89 \\ \hline
+        Python & 3.8.3 \\ \hline
+        PyTorch & 1.13.1+cu116 \\ \hline
+    \end{tabularx}
+\end{table}
+\subsection{实验设置}
+我们的模型分训练阶段和测试阶段。准备阶段，把所有的数据集的图像都调整大小到512 $\times$  512 像素；训练阶段所有图像都被裁剪为256 $\times$ 256 像素。
+我们模型中的GAN鉴别器采用和~\cite{wang2018high}一致的多尺度鉴别器设置。
+我们ICL模块中的投影层是一个两层 MLP，每层有 128 个单元。训练的时候使用鉴别器和ICL模块参与。
+我们采用学习率为0.0001的Adam优化器~\cite{diederik2014adam}进行训练，批次大小设置为16，训练轮次为160000。
+我们使用的超参数设定为$\lambda_1=1$、$\lambda_2  =1$、$\lambda_3=5$、$\lambda_4=1$、$\lambda_5=0.3$ ，$\tau=0.3$，$\lambda_{identity1}=50$，$\lambda_{identity2}=1$。
+\par 在推理阶段，我们的网络已经具有了充分的风格迁移功能，不再需要鉴别器和ICL模块的参与。
+另外，在推理测试的时候，我们随机收集了一些风格图片，包括油画、水彩画、草图等。此外，我们还收集了一些其他的图片，
+包括建筑物、森林和活照片，作为内容图像，并保持其原始大小被馈送到我们提出的模型以生成风格化图像。
 
+\subsection{实验数据集}
+本文的内容图和风格图全都来自MS-COCO数据集~\cite{lin2014microsoft}和WikiArt数据集~\cite{wikiart2018}。
+\paragraph{MS-COCO数据集}
+COCO（Common Objects in Context）数据集是一个由微软公司创建的、由来自 Google、加州理工学院和佐治亚理工学院等众多知名机构的计算机视觉专业人士维护的合作项目。其用于对象检测、分割和字幕任务的大规模图像识别数据集。它包含超过330,000 张图像，包含来自 80 多个我们生活中常见的物体和 91 个通用类别的图像，这意味着该数据集可以比小规模数据集更有效地用于对通用模型进行基准测试。COCO 数据集广泛用于计算机视觉研究，并已用于训练和评估许多最先进的对象检测和分割模型。数据集主要有两个部分：图像及其注释。其中图像被组织成一个目录层次结构，顶级目录包含训练、验证和测试集的子目录；注释以 JSON 格式提供，每个文件对应一张图片。数据集中的每个注释都包含图像文件名、尺寸、以及用于目标检测的标注等信息。我们主要使用图像数据进行训练。
+\paragraph{WikiArt 数据集}
+WikiArt数据集由WikiArt组织创建和维护。它包含来自 195 位不同艺术家的画作。该数据集有 42129 张用于训练的图像和 10628 张用于测试的图像。它具有完善的结构，因此经常被用于艺术生成的机器学习领域。我们主要使用其图像充当风格图像用于训练。
+
+\subsection{评价指标}
+我我们将从主观和客观指标两个方面对结果进行评估。主观方面，我们使用欺骗分数（DS）进行测评：
+我们为每个方法随机选择 20 张合成图像，并邀请50 名受试者猜测。
+为了更直观地比较我们方法的优势，我们随机选择相同数量的WikiArt图像来询问这50个受试人。
+客观方面，我们将从内容保真程度和人眼感知的两个角度对工作效果进行客观的量化评估。
+遵循我们在本文第2.4节描述的评价指标，我们对本文的评估采用内容保真度（Content Fidelity，CF）, 
+全局影响分数（Global Effects ，GE）和本地图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
+保证指标覆盖了感知和风格化表现这两个方面。其中CF量化计算内容的保护程度，而为了计算方便，我们决定采用GE+LP来衡量对于人眼的感知优劣。
+
+\section{实验结果和分析}
+在本节中，我们首先展示我们提出的方法在数据集上进行实验后获得的风格迁移结果，然后展示本算法与近年来表现较好的一些二维任意风格迁移算法之间的效果对比，包括定性对比与定量对比，最后对本算法中提出的几个创新模块进行消融实验以验证每个模块的有效性。
+\subsection{结果展示}
+我们随机选择了一些风格图和内容图，进行了实验并且得到了一些风格化图像，我们将其展示在\autoref{fig:pic_direct_show_3_1}和\autoref{fig:pic_direct_show_3_2}中。每个图的第一行、第二行、第三行分别为风格图、内容图和风格化图。从中我们可以看到我们提出的方法对于各种风格都有着较好的风格化能力，其风格化结果存在较少的伪影，没有人眼等显著的实物特征，并且风格图和风格化结果之间具有相应的笔触、线条等风格特征。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/showres_direct3.1.png}
+    \caption{\label{fig:pic_direct_show_3_1}风格化结果展示图1}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/showres_direct3.2.png}
+    \caption{\label{fig:pic_direct_show_3_2}风格化结果展示图2}
+\end{figure}
+\subsection{对比试验}
+\paragraph{定性实验对比}
+我们将所提出的方法与最先进的方法进行比较，包括基于注意力的风格迁移：IEAST~\cite{chen2021artistic}、AdaAttn~\cite{liu2021adaattn}、
+MAST~\cite{deng2020arbitrary}、SANet~\cite{park2019arbitrary}、AesUst~\cite{wang2022aesust}、SttyTr2~\cite{deng2022stytr2}、
+非基于注意力的风格迁移：AdaIN~\cite{huang2017arbitrary}、DEAST~\cite{zhang2022domain}、WCT~\cite{li2017universal}、ArtFlow~\cite{an2021artflow}、
+LST~\cite{li2019learning}、AST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}。比较的结果如\autoref{fig:pic_compare_3_1}和\autoref{fig:pic_compare_3_2}所示。
+IEAST、AdaAttN、MAST、SANet 和 AesUST 有时会从样式图像引入不希望的语义结构到风格化结果。
+WCT 在内容保存方面存在严重的问题。AdaIN存在内容结构模糊和样式模式失真问题。StyTr2、DEAST、ArtFlow 和 LST 无法从样式图像中学习局部纹理。
+虽然 CCPL 可以有效地保持内容结构，但它的结果中颜色分布较为混乱和无序，下图中粉色的区域无法判断语义信息。
+对于 AAST，风格图像和风格化图像之间存在明显的风格偏差。与这些方法相比，我们提出的方法可以生成具有内容结构和风格纹理的风格化图像，并且不引入无法解释的语义结构。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_compare_3.1.png}
+    \caption{\label{fig:pic_compare_3_1}风格化结果对比图1}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_compare_3.2.png}
+    \caption{\label{fig:pic_compare_3_2}风格化结果对比图2}
+\end{figure}
+\paragraph{定量试验对比}
+我们使用CF、GE、LP、DS四个指标对我们的结果和其他Sota方法进行风格化质量的定量分析。具体来说，CF 用于衡量内容特征的保存程度，
+GE 评估全局颜色和纹理的风格化。LP 根据局部风格的相似性来评估风格化质量。较高的分数意味着更好的风格迁移结果。
+DS用于衡量人类用户对于各方法生成的风格化结果的判断。本节为其他最先进的方法使用 5 个内容和 10 个样式图像来比较我们提出的方法。
+视觉比较的结果如\autoref{tab:res_compare_3}所示。其中，“推理时间”表示指使用我们的设备硬件、以端到端方式把512$\times$512像素的图片输入进行推理所消耗的时间。
+\begin{table}
+    \centering
+    \caption{定性对比结果}
+    \label{tab:res_compare_3}
+    \begin{tabular}{c|c|c|c|c}
+        \hline
+                    & CF $\Uparrow$   & GE+LP $ \Uparrow$    & 推理时间   & DS $ \Uparrow $   \\ \hline
+            WikiArt & -     & - & - & 0.784 \\ \hline
+            Ours    & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} \\ \hline
+            IEAST   & 0.412 & 1.405 & 0.759 & 0.476 \\ \hline
+            AdaAttN & 0.380 & 1.430 & 1.684 & 0.372\\ \hline
+            MAST    & 0.360 & 1.511 & 1.471 & 0.324 \\ \hline
+            SANet   & 0.366 & 1.552 & 0.759 & 0.346 \\ \hline
+            AdaIN   & 0.383 & 1.552 & 0.534 & 0.346 \\ \hline
+            CAST    & 0.335 & 1.581 & 0.534 & 0.423 \\ \hline
+            WCT     & 0.346 & 1.540 & 4.839 & 0.172 \\ \hline
+            LST     & 0.408 & 1.459 & \textbf{0.427} & 0.408 \\ \hline
+            StyTr2  & 0.336 & 1.602 & 32.921 & 0.545 \\ \hline
+            AesUST  & 0.420 & 1.524 & 0.783& 0.568 \\ \hline
+            ArtFlow & 0.411 & 1.505 & 4.530 & 0.356 \\ \hline
+            AAST    & 0.368 & 1.461 & 13.674 & 0.307 \\ \hline
+            CCPL    & 0.422 & 1.594 & 0.510 & 0.427 \\ \hline
+    \end{tabular}
+\end{table}
+可以看出，我们的方法在内容保存和感知风格方面的两项客观评价指标以及主观指标中都有较好的表现。同时可以看到我们的方法也有着较快的速度，可以作为任意风格迁移算法使用。
 % \begin{algorithm}[H]
 %     \begin{algorithmic} % enter the algorithmic environment
 %         \REQUIRE $n \geq 0 \vee x \neq 0$

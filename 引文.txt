@@ -191,8 +191,7 @@ http://theory.people.com.cn/n1/2023/1020/c40531-40099626.html
   pages={26561--26573},
   year={2021}
 }
-@inproceedings{park2019arrbitrary
-,
+@inproceedings{deng2022stytr2,
   title={Stytr2: Image style transfer with transformers},
   author={Deng, Yingying and Tang, Fan and Dong, Weiming and Ma, Chongyang and Pan, Xingjia and Wang, Lei and Xu, Changsheng},
   booktitle={Proceedings of the IEEE/CVF conference on computer vision and pattern recognition},
@@ -651,3 +650,10 @@ Dw卷积
 }
 
 
+@article{diederik2014adam,
+  title={Adam: A method for stochastic optimization},
+  author={Diederik, P Kingma},
+  journal={(No Title)},
+  year={2014}
+}
+-78
