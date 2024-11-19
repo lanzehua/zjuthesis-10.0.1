@@ -918,32 +918,90 @@ WCT 在内容保存方面存在严重的问题。AdaIN存在内容结构模糊�
 我们使用CF、GE、LP、DS四个指标对我们的结果和其他Sota方法进行风格化质量的定量分析。具体来说，CF 用于衡量内容特征的保存程度，
 GE 评估全局颜色和纹理的风格化。LP 根据局部风格的相似性来评估风格化质量。较高的分数意味着更好的风格迁移结果。
 DS用于衡量人类用户对于各方法生成的风格化结果的判断。本节为其他最先进的方法使用 5 个内容和 10 个样式图像来比较我们提出的方法。
-视觉比较的结果如\autoref{tab:res_compare_3}所示。其中，“推理时间”表示指使用我们的设备硬件、以端到端方式把512$\times$512像素的图片输入进行推理所消耗的时间。
-\begin{table}
+视觉比较的结果如\autoref{tab:tab_res_compare_3}所示。其中，“推理时间”表示指使用我们的设备硬件、以端到端方式把512$\times$512像素的图片输入进行推理所消耗的时间。
+\begin{table}[htbp]
     \centering
     \caption{定性对比结果}
-    \label{tab:res_compare_3}
-    \begin{tabular}{c|c|c|c|c}
+    \label{tab:tab_res_compare_3}
+    \begin{tabularx}{\textwidth}{c|X<{\centering}|X<{\centering}|X<{\centering}|X<{\centering}}
         \hline
-                    & CF $\Uparrow$   & GE+LP $ \Uparrow$    & 推理时间   & DS $ \Uparrow $   \\ \hline
-            WikiArt & -     & - & - & 0.784 \\ \hline
-            Ours    & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} \\ \hline
-            IEAST   & 0.412 & 1.405 & 0.759 & 0.476 \\ \hline
-            AdaAttN & 0.380 & 1.430 & 1.684 & 0.372\\ \hline
-            MAST    & 0.360 & 1.511 & 1.471 & 0.324 \\ \hline
-            SANet   & 0.366 & 1.552 & 0.759 & 0.346 \\ \hline
-            AdaIN   & 0.383 & 1.552 & 0.534 & 0.346 \\ \hline
-            CAST    & 0.335 & 1.581 & 0.534 & 0.423 \\ \hline
-            WCT     & 0.346 & 1.540 & 4.839 & 0.172 \\ \hline
-            LST     & 0.408 & 1.459 & \textbf{0.427} & 0.408 \\ \hline
-            StyTr2  & 0.336 & 1.602 & 32.921 & 0.545 \\ \hline
-            AesUST  & 0.420 & 1.524 & 0.783& 0.568 \\ \hline
-            ArtFlow & 0.411 & 1.505 & 4.530 & 0.356 \\ \hline
-            AAST    & 0.368 & 1.461 & 13.674 & 0.307 \\ \hline
-            CCPL    & 0.422 & 1.594 & 0.510 & 0.427 \\ \hline
-    \end{tabular}
+        & CF $\Uparrow$ & GE+LP $\Uparrow$ & 推理时间 & DS $\Uparrow$ \\ \hline
+        WikiArt & - & - & - & 0.784 \\ \hline
+        Ours & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} \\ \hline
+        IEAST & 0.412 & 1.405 & 0.759 & 0.476 \\ \hline
+        AdaAttN & 0.380 & 1.430 & 1.684 & 0.372 \\ \hline
+        MAST & 0.360 & 1.511 & 1.471 & 0.324 \\ \hline
+        SANet & 0.366 & 1.552 & 0.759 & 0.346 \\ \hline
+        AdaIN & 0.383 & 1.552 & 0.534 & 0.346 \\ \hline
+        CAST & 0.335 & 1.581 & 0.534 & 0.423 \\ \hline
+        WCT & 0.346 & 1.540 & 4.839 & 0.172 \\ \hline
+        LST & 0.408 & 1.459 & \textbf{0.427} & 0.408 \\ \hline
+        StyTr2 & 0.336 & 1.602 & 32.921 & 0.545 \\ \hline
+        AesUST & 0.420 & 1.524 & 0.783 & 0.568 \\ \hline
+        ArtFlow & 0.411 & 1.505 & 4.530 & 0.356 \\ \hline
+        AAST & 0.368 & 1.461 & 13.674 & 0.307 \\ \hline
+        CCPL & 0.422 & 1.594 & 0.510 & 0.427 \\ \hline
+    \end{tabularx}
 \end{table}
 可以看出，我们的方法在内容保存和感知风格方面的两项客观评价指标以及主观指标中都有较好的表现。同时可以看到我们的方法也有着较快的速度，可以作为任意风格迁移算法使用。
+\subsection{消融实验和分析}
+在本节中，我们进行了消融分析，以评估所提出方法的有效性，其结果如\autoref{fig:pic_abla_3_1}，\autoref{fig:pic_abla_3_2}中画红框所示。为了清晰可见，我们采用较大的图排布方式。
+我们可以看到，当去除ICL模块时，风格化图像的质量在内容结构、纹理和笔画笔触的一致性方面会下降。
+当去除$L_{Adv}$时，生成的风格化图像表现出明显不和谐的图样和明显的伪影，导致质量下降。这表明对抗性训练对于生成更和谐和逼真的风格化图像是重要的。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_abla_3.1.png}
+    \caption{\label{fig:pic_abla_3_1}消融实验展示1}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_abla_3.2.png}
+    \caption{\label{fig:pic_abla_3_2}消融实验展示2}
+\end{figure}
+消融实验还表明，SCIN模块在增强风格化图像和风格图像之间的全局风格一致性方面起着重要的作用。
+如果没有 SCIN 模块，可以看到，图（）中的红框区域有波纹形状的笔触，而这是我们的风格图中没有的。
+风格化结果同风格图像显示出局部的风格不一致。另外，为了证明我们使用在ICL模块中，
+使用CLIP编码器的效果比VGG好，我们也进行了消融实验。可以看出来使用VGG用于ICL模块中，会导致出现一些伪影。（比如图中红框中左侧的云倒影有不和谐的图样）。
+\par 同时我们也对这些消融操作做了定量分析，如\autoref{tab:tab_abla_3}所示。（最高和次高分别用红色、黄色标注）
+可以看到我们的完整模型的风格特征远好于消融模型，而内容保持特征仅低于可学习的VGG消融，优于其他消融模型。
+
+\begin{table}[htbp]
+    \caption{\label{tab:tab_abla_3}消融实验的定量分析}
+    \begin{tabularx}{\linewidth}{X<{\centering}|X<{\centering}|X<{\centering}|X<{\centering}|X<{\centering}|X<{\centering}|X<{\centering}}
+        \hline
+        输入   & 全模型 & 去除 ICL & 去除对抗训练 & 去除 SCIN & 使用预训练 VGG & 使用可学习 VGG \\ \hline
+
+        CF    & \textcolor{orange}{0.432}  & 0.423 & 0.414 & 0.431 & 0.426 & \textcolor{red}{0.435}  \\ \hline
+        GE+LP & \textcolor{red}{1.595} & 1.515 & \textcolor{orange}{1.565} & 1.430 & 1.452 & 1.305 \\ \hline
+
+    \end{tabularx}
+\end{table}
+\par 同时，为了说明我们提出的感知编码器(PE)的效果，我们也针对我们的PE模块做了消融实验。现有的基于注意力的方法通常使用SANet作为骨干，
+可以学习详细的风格纹理。然而，注意力图是使用VGG的特征向量进行计算的
+% （即 $ReLU4\_1$和 $ReLU5\_1$）。
+VGG可以有效地捕捉显著的分类特征(如眼睛)。这使得它保留了风格化图像的内容结构，造成了风格化伪影。
+为了证明这一点，我们使用 SANet 作为基线，分别使用我们提出的感知编码器和固定的 VGG编码器作为变量，渲染出风格化图和注意力图作为比较，如\autoref{fig:pic_abla_pe}所示。
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_abla_pe_show.png}
+    \caption{\label{fig:pic_abla_pe}对PE模块的消融实验结果图}
+\end{figure}可以看到，在上方的风格化结果中，使用VGG编码的结果图含有人眼这一元素，而使用我们的PE编码器得到的风格化图没有。并且也可以看到，VGG的注意力图集中在人脸部区域，而我们的PE编码器得到的注意力图较为分散。因此可以认为，我们提出的PE编码器能够有效捕获风格信息，并且避免过多关注风格图像中如人眼这类的显著分类特征。
+\subsection{本章小结}
+本章节提出了一种新颖的网络架构，可以生成高质量的风格化图像。具体来说，我们引入了一种新的风格一致性实例归一化（SCIN）方法，将内容特征与特征空间中的风格特征对齐。然后，我们提出了一种基于实例的对比学习(ICL)方法来学习风格化到风格化的关系，以提高风格化的质量。此外，我们分析了使用固定 VGG 作为风格迁移任务中特征提取器的局限性，并提出了一个感知编码器 (PE) 来更有效地捕获样式信息。本章第一小节是引言，介绍和对比了前人的研究缺陷，引入本章的研究内容并归纳了本章的研究成果。第二小节是本章的方法介绍，介绍了我们的方法总述，并逐模块对我们提出的方法进行详细阐述。第三小节是实验的设计和参数设定，我们对我们的实验环境配置、实验设定、实验用数据集、实验的评价指标进行了说明。第四小节则对我们的方法进行了直观的结果展示，并且也对于许多现有方法进行了对比试验，从定性和定量两个角度对我们的实验结果进行了比对，证明了我们的方法性能优越。同时也对我们提出的模块分别进行了消融实验，验证了我们的方法的有效性。
+
+% \begin{table}[htbp]
+%     \caption{\label{tab:sample}自动调节列宽的表格}
+%     \begin{tabularx}{\linewidth}{c|X<{\centering}}
+%         \hline
+%         第一列 & 第二列 \\ \hline
+%         xxx & xxx \\ \hline
+%         xxx & xxx \\ \hline
+%         xxx & xxx \\ \hline
+%     \end{tabularx}
+% \end{table}
+
 % \begin{algorithm}[H]
 %     \begin{algorithmic} % enter the algorithmic environment
 %         \REQUIRE $n \geq 0 \vee x \neq 0$
