@@ -544,17 +544,61 @@ LPIPS模型的具体架构和参数是经过大规模训练得到的，用于捕
 
 
 
-\chapter{另一章}
+% \chapter{另一章}
 
 
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=.3\linewidth]{example-image-a}
+%     \caption{\label{fig:fig-placeholder}图片占位符}
+% \end{figure}
+
+
+
+%第三章
+\chapter{基于风格一致性实例归一化和对比学习的2D图像任意风格迁移算法}
+
+\section{引言}
+对2D风格迁移的研究由来已久，这一任务旨在生成一个新的图像，该图像保留了原本给定的内容图像的内容，同时结合了给定风格图像的风格特征。
+Gatys等人~\cite{gatys2016image}率先提出了一个开创性的工作，引入了一种基于神经网络的在线优化方法进行样式转移。
+所提出的方法使用固定的模型 (VGG)~\cite{simonyan2014very}来提取内容和风格特征。它迭代优化内容特征以匹配输入图像的内容和样式特征以匹配参考图像的风格。
+此外，多风格方法~\cite{dumoulin2016learned}通过使用单个预训练模型来执行具有多个风格参考的风格迁移，扩展了风格迁移的能力。
+然后，任意风格迁移方法~\cite{huang2017arbitrary}成为研究热点。任意风格迁移方法可以根据单个模型从任意内容和样式图像生成风格化图像。
+现有的任意风格迁移方法可以分为两类：（a）基于注意力的风格迁移方法。(b) 采用可变参数的归一化的风格迁移方法。
+\par 作为前者的代表，IEAST~\cite{chen2021artistic}、AdaAttN~\cite{liu2021adaattn}、MAST~\cite{deng2020arbitrary}、SANet~\cite{park2019arbitrary}、
+RAST~\cite{ma2023rast}和 AesUST~\cite{wang2022aesust}
+利用注意力机制将风格特征局部融合到内容特征中。虽然基于注意力的任意风格迁移在学习局部纹理和内容风格的语义相关性方面非常优越，但这些方法通常会带来明显的伪影，
+这使得它们的结果很容易同真实绘画被区分开。尽管StyTr2~\cite{deng2022stytr2}使用transformer来处理CNN 在长距离依赖性处理不足和细节丢失问题，
+避免引入伪影，取得了较好的风格化效果。但是该方法的参数量较大，通常需要大量的计算资源，对于个人研究者或小团队来说，获取足够的计算资源可能是一个挑战。
+\par 作为后者的代表，AdaIN~\cite{huang2017arbitrary}、DEAST~\cite{zhang2022domain}、WCT~\cite{li2017universal}、ArtFlow~\cite{an2021artflow}、
+LST~\cite{li2019learning}、AAST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}等工作对内容特征做变换以匹配风格特征的二阶全局统计数据，
+而不考虑局部分布。它们通常可以将全局的风格纹理和模式集成到内容目标中。但是，真正的艺术品之所以能同风格化图像相辨别，
+主要由于其艺术特征，如颜色、笔画、色调、纹理等的存在，它们可以被人眼判断为真；而上述方法不能从这一层面生成高质量的图像，
+具体区别参看见\autoref{fig:show_diff_pic1}，\autoref{fig:show_diff_pic2}。
+\par 为了解决这些问题，本章提出了风格一致性实例归一化（Style Consistency Instance Normalization ，SCIN），将内容特征与风格特征在特征分布上对齐，这有助于提供全局风格信息。具体来说，我们使用transformer的encoder作为全局风格提取器，以从风格图像中捕获风格信息的非局部的、不明显的依赖关系。Transformer编码器输出尺度和偏置参数，用于调整内容特征的全局信息，匹配风格图像的特征分布，最终能学习到风格的全局一致性特征。
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=.3\linewidth]{example-image-a}
-    \caption{\label{fig:fig-placeholder}图片占位符}
+    \includegraphics[width=\linewidth]{pics/pic_3.1.1_combined1.png}
+    \caption{\label{fig:show_diff_pic1}现有的方法在一些特定的风格化图像上的缺陷1}
 \end{figure}
-
-\chapter{再一章}
-
+\par 在约束方面，现有的风格迁移方法通常使用内容损失和风格损失来确保内容图到风格化图像和风格图到风格化图像的关系。然而，它们往往忽略了这样一种事实：从直观上讲，在内容图不变的情况下，用同一风格的图像获得的风格化图像应该比用不同风格的图像获得的结果在风格上有更近的关系；
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_3.1.1_combined2.png}
+    \caption{\label{fig:show_diff_pic2}现有的方法在一些特定的风格化图像上的缺陷2}
+\end{figure}同样地，基于相同的内容图像的风格化结果应该比基于不同内容图像的风格化结果在内容上有更近的关系。我们把这种关系称为风格化与风格化的关系。现有的大多方法没有考虑风格化到风格化的关系，而这对风格迁移也至关重要。IEAST~\cite{chen2021artistic}提出了两个对比损失，首次针对风格迁移中的风格化与风格化的关系这一问题进行了探索。在他们的启发下，我们提出了一种新的基于实例的对比学习(Instance-based Contrastive Learning，ICL)，当多个风格化嵌入共享相同的内容或风格时，该策略促使它们相互靠近，但在其他情况下被促使分开。
+\par 同时，注意到大多数的基于注意力的方法一般采用预训练的VGG编码器作为风格提取器，
+由于VGG是在ImageNet~\cite{deng2009imagenet}数据集上训练的编码器，它天然的会更多地提取某些风格图像中的类似特征
+（比如使用人物画作为风格图像时，它可以提取到人眼这类特征），
+这对于某些特定风格图的风格化任务是有负面影响的，因此由Inception Transformer~\cite{si2022inception}启发，
+我们提出了一个感知编码器 (PE) 来提取风格信息并避免过多关注显著的分类特征。
+\par 总而言之，本章节的主要工作如下： 
+\begin{itemize}
+    \item 我们提出了一种新的风格一致性实例归一化 (SCIN) 模块来捕获风格的非局部相关性。它可以将内容特征与提取到的风格长程特征而不是风格图的均值和方差对齐。
+    \item 考虑到现有的方法一般缺乏对于风格化到风格化的关系的考量，从而导致具有伪影的低质量风格化图像，我们引入了一种新的基于实例的对比学习(ICL)来学习风格化到风格化的关系以减少伪影生成。
+    \item 分析了由于使用预训练的VGG编码器作为风格编码器导致的风格特征提取的缺陷，并提出了一种新的感知编码器(PE)，它可以捕获风格信息，避免过多关注风格图像中的显著分类特征。
+    \item 与最先进的方法相比，大量的实验表明，我们提出的方法可以学习详细的纹理和全局风格相关性，并去除伪影。
+\end{itemize}
 % \par 如\autoref{alg:sample}，这是一个算法
 
 % \begin{algorithm}[H]
