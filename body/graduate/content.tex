@@ -197,7 +197,7 @@ NeRF方法由谷歌高级研究科学家Jon Barron在2020年首次提出，是�
 $T(t)=\exp{(-\int_{t_n}^t\sigma(\mathbf{r}(s))ds)}$表示t处的不透明度。
 
 
-\par 对于问题1，NeRF构建了一个神经网络$F_Θ$，其网络架构如\autoref{fig:nerf_net}所示：
+\par 对于问题1，NeRF构建了一个神经网络$F_\theta$，其网络架构如\autoref{fig:nerf_net}所示：
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/nerf_net.png}
@@ -401,7 +401,7 @@ CLIPstyler~\cite{kwon2022clipstyler}引入了一个文本引导的合成模型�
     \label{equ:equ_cal_ht}
     HT(\vec{x},\vec{s})=\frac1N\sum_{l=1}^N\frac{G(f_l(\vec{x}))\cdot G(f_l(\vec{s}))}{\parallel G(f_l(\vec{x}))\parallel\cdot\parallel G(f_l(\vec{s}))\parallel}
 \end{equation}
-其中$G(⋅)$表示Gram矩阵。由于认为这两个因素都是同等重要的，因此最后通过计算二者平均值得到GE分数，如\autoref{equ:equ_cal_ge}所示：
+其中$G(*)$表示Gram矩阵。由于认为这两个因素都是同等重要的，因此最后通过计算二者平均值得到GE分数，如\autoref{equ:equ_cal_ge}所示：
 \begin{equation}
     \label{equ:equ_cal_ge}
     GE(\vec{x},\vec{s})=\frac12(GC(\vec{x},\vec{s})+HT(\vec{x},\vec{s}))
@@ -661,7 +661,7 @@ SCIN模块的目的是学习得风格图像的全局信息特征，并且把它�
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/scinlayer.png}
-    \caption{\label{fig:pic_scinlayer}3DGS方法的管线图}
+    \caption{\label{fig:pic_scinlayer}SCIN Layer结构图}
 \end{figure}
 图中使用的解码器层是同VGG编码器对应层的镜像结构，并且使用预训练权重初始化。考虑到特征向量每次经过解码器层都会导致其宽高尺寸变大一倍，
 我们采用梯次变大的多尺度的风格图片输入以减少计算量。我们可以采用如计算方式进行处理：
@@ -697,11 +697,100 @@ $F_{(i-1)}$为其上一层的输出。从$Y_s^i$中抽取特征得到\(\gamma_{s
     \label{equ:cal_scin_fi}
     F_i=\gamma_s^i\otimes\mathrm{IN}(D_i(F_{i-1}))\oplus\beta_s^i
 \end{equation}
-其中的$\oplus$和$\otimes$运算为逐通道的加法和乘法操作。特别地，当计算\(D_0(F_0)\)的时候，用\(D_0(F_0)=F_{CSl}\)完成计算，其中$F_{CSl}$为上一小节中获得的特征。
-以此计算完四个值后可以得到混合了内容特征、全局风格特征和局部风格特征的结果\(SCIN(F_{CSl},Y_S^1,Y_S^2,Y_S^3,Y_S^4)\)，它就是\(D_4(F_4)\)。
+其中的$\oplus$和$\otimes$运算为逐通道的加法和乘法操作。
+特别地，当计算\(D_0(F_0)\)的时候，用\(D_0(F_0)=F_{CSl}\)完成计算，其中$F_{CSl}$为上一小节中获得的特征。
+以此计算完四个值可以得到混合了内容特征、全局风格特征和局部风格特征的结果\(SCIN(F_{CSl},Y_S^1,Y_S^2,Y_S^3,Y_S^4)\)，它就是\(D_4(F_4)\)。
 
 \subsection{PE模块结构}
 
+由于在之前的风格迁移工作中，大多使用VGG作为风格图像的编码器，其在一些特定的风格风格类型图，如人脸的特征提取时有天然的缺陷，
+它会在关注风格特征的同时关注到比如人眼这种结构特征，而这是我们不需要的。如果采用基于transformer的架构，则它在高频特征提取的工作中表现不佳。
+为了解决这一两难问题，我们受Inception Transformer~\cite{si2022inception}启发，提出了一种新的感知编码器(PE)，
+它可以捕获风格信息，避免过多关注风格图像中的显著分类特征，并在后续的消融实验中中验证了它的优越性。详细架构如\autoref{fig:pic_peblock}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pe.png}
+    \caption{\label{fig:pic_peblock}PE Block的结构图}
+\end{figure}
+以第一个PE Block的计算为例，向量块\(F_s^{512\times64\times64}\)被输入到PE Block中，
+它被沿通道维度均分为高频和低频分量\(F_h^{256\times64\times64}\text{和}F_l^{256\times64\times64}\)。
+我们使用了一种并行结构来学习高频分量\(F_{h1}^{128\times64\times64}\text{和}F_{h2}^{128\times64\times64}\)。$F_{h1}$使用最大池化和线性层进行嵌入，~\cite{szegedy2015going}
+$F_{h2}$被馈送到线性和深度卷积层~\cite{mamalet2012simplifying,chollet2017xception}。
+而$F_l$依次经过平均池化、多头自注意力计算、上采样步骤。此过程可如\autoref{equ:cal_peblock_fl}表达
+
+\begin{equation}
+    \label{equ:cal_peblock_fl}
+    \begin{gathered}
+        Y_{\boldsymbol{h}1}=\mathrm{FC}(\mathrm{MaxPool}(\boldsymbol{F}_{\boldsymbol{h}1})) \\
+        Y_{h2}=\mathrm{DwConv}(\mathrm{FC}(F_{h2})) \\
+        \boldsymbol{F}_{l}=\mathrm{Upsample}\left(F_{\mathrm{MSA}}(\mathrm{AvePooling}(\boldsymbol{F}_{l}))\right) \\
+        F_{PE Block}=\mathrm{Concat}(Y_l,Y_{h1},Y_{h2})
+        \end{gathered}
+\end{equation}
+输入的风格图像依次经过二维卷积、PEBlock1、下采样、PEBlock2之后，得到风格特征。
+
+\subsection{基于实例的对比学习方法}
+对比学习已被用于许多领域~\cite{chen2020improved,han2021dual,wu2021contrastive}，该方法已经被证明可以保留内容图像的内容~\cite{han2021dual}并增强风格化图像的风格~\cite{chen2021artistic}。
+为了更好地去除风格化的伪影、提升风格化的质量，我们提出了一种新的 ICL 来学习风格化到风格化的关系。
+考虑到VGG网络是在规模较小的ImageNet数据集（约1400万个图像样本）上进行的训练，
+我们没有使用以前基于VGG的对比学习~\cite{han2021dual}，而是利用预训练的CLIP~\cite{radford2021learning}模型的图像编码器来获得基于实例的潜在代码空间，
+以更好地衡量图片的相似程度、优化风格化到风格化的关系。CLIP是一个大型的多模态预训练神经网络，
+由OpenAI在2021年发布。‌该模型基于对比学习的原理，通过大量图像和文本的配对数据（约4亿个文本-图像对）进行预训练，
+学习图像和文本之间的对齐关系，具有多模态学习的能力。CLIP模型由图像编码器和文本编码器两部分组成，
+图像编码器可以将图像转换为特征向量，而文本编码器则将文本转换为特征向量。这两个特征向量同属一个向量空间。
+
+\par 基于上述分析，我们实现了基于实例的对比学习，其根据图像的CLIP空间编码来约束图像的像素级表现。其示意图如\autoref{fig:pic_icl}所示。其中蓝色层代表不可训练的网络，橙色层代表可训练的网络。
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/icl.png}
+    \caption{\label{fig:pic_icl}对比学习示意图}
+\end{figure}
+假设$b_s^n$和$b_c^n$表示样式一批次大小为偶数n的风格图像和内容图像集。对于$b_s^n$和$b_c^n$的每个样式图像$s_j$和内容图像$c_i$，
+其中i，j满足\(i\in[0,n-1],j\in[0,n-1]\)，我们使用$s_ic_j$来表示这两图像$c_i$、$s_j$的风格化结果。
+对于所有内容图像和样式图像，我们依次构建风格化图像并记为\(S_1C_1,S_1C_2,\ldots,S_1C_n;\ldots,S_nC_1,S_nC_2,\ldots,S_nC_n\)；
+对于每一个特定的风格化图像$s_i c_j$，我们按照如下方式构建正负用例：对于全部的定义域内的p和q，当满足$p= i,q\neq j$时，其对应的风格化结果$s_p c_q$被视为$s_i c_j$的正例对，
+其含义为同一风格图像进行的全部风格化结果应该是更“相似”的；而当$p\neq i,q\neq j$的时候，其对应的风格化结果$s_p c_q$被视为$s_i c_j$的负例对。
+基于这些条件，我们可以通过\autoref{equ:cal_lic}计算对比学习的损失函数：
+\begin{equation}
+    \label{equ:cal_lic}
+    \begin{gathered}
+        L_{IC}=L_{pos}+L_{neg}, \\
+        L_{pos} =-log(\frac{P_s}{P_s+N_s}),L_{neg}=-log(\frac{P_c}{P_c+N_c}), \\
+        P_s=\exp\left((M_s(s_ic_j)^\top M_s(s_ic_j)/\tau\right), \\
+        N_s=\sum exp(M_s(s_ic_j)^\top M_s(s_ic_j)/\tau), \\
+        P_c=\exp{(M_c(s_ic_j)^\top M_c(s_ic_j)/\tau)}, \\
+        N_c=\sum exp(M_c(s_ic_j)^\top M_c(s_ic_j)/\tau), 
+        \end{gathered}
+\end{equation}
+其中，\(M_s=l_s(E_{clip}(\cdot)),M_c=l_c(E_{clip}(\cdot)),E_{clip}(\cdot)\)代表CLIP模型的图像编码器，
+$l_c$和$l_s$是获取内容编码和风格编码的可学习投影网络，如下图所示；$\tau$是控制靠近和远离程度的超参数，设置为0.3。
+我们认为，在使用$L_{IC}$约束对projection层进行充分的训练以后，它可以很好地学习到把风格按照我们提出的规则投影到CLIP空间。
+
+\subsection{损失函数}
+本章采用多种损失函数来约束网络的训练，具体包括：感知内容损失$L_C$、感知风格损失$L_S$、对抗损失$L_{Adv}$、
+身份损失$L_{Identity}$和实例对比损失$L_{IC}$，下面将具体的对这几个损失进行介绍。
+\paragraph{感知内容和风格损失}
+\par 按照之前的风格迁移方法~\cite{han2021dual}所述，对于VGG编码器的第x层，我们记为$E_{VGG}^x$，感知内容和样式损失可以用\autoref{equ:cal_perceptual_loss_cs}计算。
+
+\begin{equation}
+    \label{equ:cal_perceptual_loss_cs}
+    \begin{gathered}
+        L_{C} = \sum_{i=4}^{L} \parallel E_{VGG}^{x}(l_{CS}) - E_{VGG}^{x}(l_{C}) \parallel_{2} \\
+        L_{S} = \sum_{i=1}^{L} \parallel \mu(E_{VGG}^{x}(l_{cs})) - \mu(E_{VGG}^{x}(l_{S})) \parallel_{2} + \parallel \theta(E_{VGG}^{x}(l_{CS})) - \theta(E_{VGG}^{x}(l_{S})) \parallel_{2}
+    \end{gathered}
+\end{equation}
+其中$\mu$和$\theta$表示通道上的均值和标准差。对于x的取值，我们使用了$ReLU4\_1$和$ReLU5\_1$两个层来计算$L_C$，
+使用$ReLU1\_1$, $ReLU2\_1$，$ReLU3\_1$，$ReLU4\_1$
+和$ReLU5\_1$这五个层来计算$L_S$，以求模型能更加关注不同尺度的风格特征信息。
+
+% \paragraph{对抗损失}
+% \par 在这里，我们使用生成对抗网络GAN~\cite{goodfellow2020generative}方法从风格数据集S中学习人类感知的风格信息。
+% GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别器 D）组成，它们相互竞争以达到纳什均衡。
+% 具体来说，我们将生成器产生的风格化图像和从S采样的艺术品分别输入到鉴别器中作为虚假数据和真实数据。
+% 在训练过程中，生成器将通过生成逼真的艺术图像来试图欺骗鉴别器，而鉴别器将尝试区分生成的假艺术品和真实艺术品。
+% 经过充分的训练，理想状态下，生成器将变得足够强大，可以生成人类感知中足够真实的风格图像。
+% 令I_cs表示风格化结果，I_s表示风格图，D_s (*)表示鉴别器的输出。我们的训练目标是让我们生成的风格化结果尽可能地像真实的风格化作品。对抗训练损失可以表述为：
 % \par 如\autoref{alg:sample}，这是一个算法
 
 % \begin{algorithm}[H]
