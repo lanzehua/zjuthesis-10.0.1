@@ -812,7 +812,7 @@ GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别�
         \end{aligned}
 \end{equation}
 其中x可取$ReLU1\_1$, $ReLU2\_1$，$ReLU3\_1$，$ReLU4\_1$
-和$ReLU5\_1$，两个$λ_{identity}$是与不同损失项相关的权重控制参数。
+和$ReLU5\_1$，两个$\lambda_{identity}$是与不同损失项相关的权重控制参数。
 
 
 
@@ -826,7 +826,22 @@ GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别�
 
 \section{实验设计和参数设定}
 \subsection{实验环境配置}
-本算法基于Python语言和Pytorch~\cite{paszke2019pytorch}深度学习框架实现，实验环境中的硬件配置信息和软件版本信息如下所示。
+本算法基于Python语言和Pytorch~\cite{paszke2019pytorch}深度学习框架实现，实验环境中的硬件配置信息和软件版本信息如\autoref{tab:tab_hardware}所示。
+
+
+%改表格左右竖线可以再tabularx改，然后横线就看加不加hline
+
+\begin{table}[htbp]
+    \caption{\label{tab:tab_hardware}硬件配置信息}
+    \begin{tabularx}{\linewidth}{c|X<{\centering}}
+        \hline
+        硬件 & 信息 \\ \hline
+        架构 & X86-64 \\ \hline
+        CPU & Intel 酷睿12th Gen Intel(R) Core(TM) i7-12700F \\ \hline
+        GPU & NVIDIA GeForce RTX 3090，24GB \\ \hline
+        内存 & 512GB \\ \hline
+    \end{tabularx}
+\end{table}
 
 % \begin{algorithm}[H]
 %     \begin{algorithmic} % enter the algorithmic environment
