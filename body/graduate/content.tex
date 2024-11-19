@@ -784,14 +784,49 @@ $l_c$和$l_s$是获取内容编码和风格编码的可学习投影网络，如�
 使用$ReLU1\_1$, $ReLU2\_1$，$ReLU3\_1$，$ReLU4\_1$
 和$ReLU5\_1$这五个层来计算$L_S$，以求模型能更加关注不同尺度的风格特征信息。
 
-% \paragraph{对抗损失}
-% \par 在这里，我们使用生成对抗网络GAN~\cite{goodfellow2020generative}方法从风格数据集S中学习人类感知的风格信息。
-% GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别器 D）组成，它们相互竞争以达到纳什均衡。
-% 具体来说，我们将生成器产生的风格化图像和从S采样的艺术品分别输入到鉴别器中作为虚假数据和真实数据。
-% 在训练过程中，生成器将通过生成逼真的艺术图像来试图欺骗鉴别器，而鉴别器将尝试区分生成的假艺术品和真实艺术品。
-% 经过充分的训练，理想状态下，生成器将变得足够强大，可以生成人类感知中足够真实的风格图像。
-% 令I_cs表示风格化结果，I_s表示风格图，D_s (*)表示鉴别器的输出。我们的训练目标是让我们生成的风格化结果尽可能地像真实的风格化作品。对抗训练损失可以表述为：
+\paragraph{对抗损失}
+\par 在这里，我们使用生成对抗网络GAN~\cite{goodfellow2020generative}方法从风格数据集S中学习人类感知的风格信息。
+GAN 是一个流行的生成模型，由两个网络（即生成器 G 和鉴别器 D）组成，它们相互竞争以达到纳什均衡。
+具体来说，我们将生成器产生的风格化图像和从S采样的艺术品分别输入到鉴别器中作为虚假数据和真实数据。
+在训练过程中，生成器将通过生成逼真的艺术图像来试图欺骗鉴别器，而鉴别器将尝试区分生成的假艺术品和真实艺术品。
+经过充分的训练，理想状态下，生成器将变得足够强大，可以生成人类感知中足够真实的风格图像。
+令$I_{cs}$表示风格化结果，$I_s$表示风格图，$D_s (*)$表示鉴别器的输出。我们的训练目标是让我们生成的风格化结果尽可能地像真实的风格化作品。
+对抗训练损失可以表述为\autoref{equ:cal_ladv}：
+
+\begin{equation}
+    \label{equ:cal_ladv}
+    \begin{aligned}
+    L_{Adv}=E_{y\sim I_s}[\log(D_s(y))]+E_{x\sim I_{cs}}[\log(1-D_s(x)]]
+    \end{aligned}
+\end{equation}
 % \par 如\autoref{alg:sample}，这是一个算法
+\paragraph{身份损失}
+基于注意力的风格迁移往往会丢失内容结构，因此前人提出使用身份损失~\cite{zhao2020unpaired}来解决这个问题。
+本章中的$L_{Identity}$可以用\autoref{equ:cal_lidentity}计算：
+\begin{equation}
+    \label{equ:cal_lidentity}
+    \begin{aligned}
+        L_{Identity}& =\lambda_{identity1}(\parallel I_{cs}-I_c\parallel_2+\parallel I_{cs}-I_s\parallel_2), \\
+        &+\sum_{i=0}^L\lambda_{identity2}(\parallel E_{VGG}^x(I_{cs})-E_{VGG}^x(I_c)\parallel_2 \\
+        &+\parallel E_{VGG}^x(I_{cs})-E_{VGG}^x(I_s)\parallel_2),
+        \end{aligned}
+\end{equation}
+其中x可取$ReLU1\_1$, $ReLU2\_1$，$ReLU3\_1$，$ReLU4\_1$
+和$ReLU5\_1$，两个$λ_{identity}$是与不同损失项相关的权重控制参数。
+
+
+
+\paragraph{实例对比损失}
+我们提出的ICL模块，经过训练后可以很好地把风格遵照我们提出的规则投影到CLIP空间。
+训练期间，对于生成的风格化图像，都输入到预训练的CLIP图像编码器和两个可训练的投影层中，
+计算出这一个批次输出的风格化损失，为前述模块提供一个风格化到风格化关系的指引。我们用$L_{IC}$表示这一损失。
+\paragraph{总损失}
+我们对上述所有损失进行加权求和以获得最终的目标损失函数$L_{Total}$:\(L_{Total}= \lambda_{1}L_{S}+\lambda_{2}L_{C}+\lambda_{3}L_{Identity}+\lambda_{4}L_{Adv}+\lambda_{5}L_{IC}\)
+其中$\lambda_1$、$\lambda_2$、$\lambda_3$、$\lambda_4$、$\lambda_5$是五个权重参数。
+
+\section{实验设计和参数设定}
+\subsection{实验环境配置}
+本算法基于Python语言和Pytorch~\cite{paszke2019pytorch}深度学习框架实现，实验环境中的硬件配置信息和软件版本信息如下所示。
 
 % \begin{algorithm}[H]
 %     \begin{algorithmic} % enter the algorithmic environment
