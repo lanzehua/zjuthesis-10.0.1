@@ -599,6 +599,109 @@ LST~\cite{li2019learning}、AAST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}
     \item 分析了由于使用预训练的VGG编码器作为风格编码器导致的风格特征提取的缺陷，并提出了一种新的感知编码器(PE)，它可以捕获风格信息，避免过多关注风格图像中的显著分类特征。
     \item 与最先进的方法相比，大量的实验表明，我们提出的方法可以学习详细的纹理和全局风格相关性，并去除伪影。
 \end{itemize}
+
+\section{方法介绍}
+\subsection{总述}
+\par 该方法的概述如\autoref{fig:pic_main}所示。我们从风格图片集和内容图片集中各抽取一张图像作为网络输入。
+我们使用预先训练的VGG网络来提取内容特征，并使用我们提出的感知编码器(PE)来提取样式特征。
+然后，我们使用交叉注意力模块将风格特征组合入内容特征中，使内容特性能够充分融合风格图像的局部风格信息。
+接下来，风格一致性实例归一化 (SCIN) 模块将空间域上的内容特征和风格特征对齐，
+以确保内容特征能包含风格特征的全局信息。经过两个模块对齐操作后的内容向量已经具有了全局和局部的风格特征。
+将对齐的特征逐级输入到解码器中，重建风格化的图像。重建后的图像通过鉴别器进行对抗损失约束。
+此外，我们使用对比学习方法来学习风格化图像和风格图像之间的关系，它补充了仅考虑风格化图像和内容图像或风格图像之间关系的内容损失和风格损失。
+这使我们能够生成高质量的风格化图像。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/mainpic.png}
+    \caption{\label{fig:pic_main}方法总览图}
+\end{figure}
+\subsection{AdaIN方法}
+AdaIN~\cite{huang2017arbitrary}提出了自适应实例归一化来对齐内容特征$F_c$的通道均值和方差，以匹配它相应的风格图特征$F_s$。它自适应地从样式输入计算仿射参数，如\autoref{equ:cal_adain}所示：
+\begin{equation}
+    \label{equ:cal_adain}
+    AdaIN(F_c,F_s)=\sigma(F_s)\left(\frac{F_c-\mu(F_c)}{\sigma(F_c)}\right)+\mu(F_s)
+\end{equation}
+其中 σ(*)和μ(*) 是对输入张量的空间域计算的标准差和均值。给定一个输入批次$x\in R^{N\times C\times H\times W},\mu(x)\text{ 和 }\sigma(x)$可以\autoref{equ:cal_adain_miu_sigma}所示方式计算：
+\begin{equation}
+    \label{equ:cal_adain_miu_sigma}
+    \begin{aligned}
+        &\mu_{nc}(x) =\frac1{HW}\sum_{h=1}^H\sum_{w=1}^Wx_{nchw}, \\
+        &\sigma_{nc}(x) =\sqrt{\frac1{HW}\sum_{h=1}^H\sum_{w=1}^W\left(x_{nchw}-\mu_{nc}(x)\right)^2+\epsilon} 
+        \end{aligned}
+\end{equation}
+其中$\epsilon$为一个极小量，其主要作用是防止$\sigma_{nc} (x)$为0。
+\par 经过这一操作，AdaIN可以快速地的让内容图像同风格图像的全局特征对齐。这一方法在任意风格迁移领域有着很大的影响力。
+
+\subsection{CA模块结构}
+我们使用的交叉注意力模块（Cross Attention）目的是根据内容图像的语义空间分布，充分且高效地融合风格图像的局部特征属性。
+它通过查询内容特征并在空间上重新排列样式特征来学习内容特征和样式特征之间的局部相关性。其示意如\autoref{fig:pic_ca}所示。
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.6\linewidth]{pics/ca.png}
+    \caption{\label{fig:pic_ca}交叉注意力模块示意图}
+\end{figure}
+其计算过程如下述，首先从VGG编码器得到内容图像向量$F_c$，从PE得到风格图像向量$F_s$，然后经过如\autoref{equ:cal_fattn}所示计算得到混合了内容特征与风格局部特征的结果$F_{Attn}$：
+
+\begin{equation}
+    \label{equ:cal_fattn}
+    F_{Attn}=W_O\cdot(softmax\left(\frac{(W_Q\cdot c_{norm}(F_C))\cdot(W_K\cdot c_{norm}(F_S))^T}{\sqrt{d}}\right)\cdot W_VF_S)
+\end{equation}
+其中$W_O$、$W_Q$、$W_K$、$W_V$分别是几个可训练的权重矩阵，$c_{norm} (*)$是channel-wise的归一化计算操作，$softmax(*)$是归一化指数函数。
+把得到的$F_{Attn}$同原来的$F_C$相加，得到最终结果$F_{CSl}$，如\autoref{equ:cal_fcsl}所示。
+\begin{equation}
+    \label{equ:cal_fcsl}
+    F_{CSl}=F_{Attn}+F_C
+\end{equation}
+
+\subsection{SCIN模块的结构}
+SCIN模块的目的是学习得风格图像的全局信息特征，并且把它融合到含有内容信息的特征张量中。
+它由多个SCIN Layer模块和多个VGG的解码器层串联构成，每个模块接受风格图输入和特征张量输入。
+通过多头自注意力机制习得风格图像的全局特征并且将其融合到内容特征中。\autoref{fig:pic_scinlayer}是第i层SCIN layer的结构：
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{pics/scinlayer.png}
+    \caption{\label{fig:pic_scinlayer}3DGS方法的管线图}
+\end{figure}
+图中使用的解码器层是同VGG编码器对应层的镜像结构，并且使用预训练权重初始化。考虑到特征向量每次经过解码器层都会导致其宽高尺寸变大一倍，
+我们采用梯次变大的多尺度的风格图片输入以减少计算量。我们可以采用如计算方式进行处理：
+\par 对于第i个SCIN Layer，（在我们的实际操作中共有4层，i依次能取1，2，3，4），给定一组输入风格序列的嵌入张量\(Z_{s}^{i}=(E_{s1},E_{s2},\ldots,E_{sn})\)，
+我们首先将其输入到transformer的编码器层。输入序列被归一化后，被编码为Q、K和V，如\autoref{equ:cal_scin_qkv}所示：
+\begin{equation}
+    \label{equ:cal_scin_qkv}
+    Q=l_{norm}(Z_{s}^{i}W_{q}),K=l_{norm}(Z_{s}^{i}W_{k}),V=l_{norm}(Z_{s}^{i}W_{v})
+\end{equation}
+其中\(W_q,W_k,W_v\in\mathbb{R}^{C\times d_{head}},l_{norm}(*)\)是层归一化计算，随后可以用\autoref{equ:cal_scin_msa}计算多头自注意力的值：
+\begin{equation}
+    \label{equ:cal_scin_msa}
+    F_{\mathbf{MSA}}(Q,K,V)=\text{ Concat( Attention }_1(Q,K,V),\ldots,\text{ Attention }_N(Q,K,V))\cdot W_o
+\end{equation}
+其中$W_o\in\mathbb{R}^{C\times C}$也是可学习的参数， N是多头的个数，\(d_{head}=\frac cN\)是注意力头的维度；
+那么可以用\autoref{equ:cal_scin_ysi}计算得到编码的风格序列$Y_s^i$：
+\begin{equation}
+    \label{equ:cal_scin_ysi}
+    \begin{aligned}&Y_s^{\prime}=l_{norm}(F_{\mathrm{MSA}}(Q,K,V)+Z_s^i)\\&Y_s^i=l_{norm}(F_{\mathrm{FFN}}(Y_s^{\prime})+Z_s^i)\end{aligned}
+\end{equation}
+其中$F_{\mathrm{FFN}}(Y_{s}^{\prime})=\max(0,Y_{s}^{\prime}W_{1}+b_{1})W_{2}+b_{2}$代表一次前馈计算步骤。
+在获得了编码的风格序列特征后，我们也参考AdaIN的思路，把包含内容风格的特征对齐到$Y_s^i$上，以完成内容特征与全局风格特征的融合。
+但是和AdaIN不同的是，我们的方法中的特征和偏置变量是来源于风格的全局特征的。对于给定的风格序列编码$Y_s^i$分别计算其尺度特征\(\gamma_{s}^{i}\)和偏置特征\(\beta{s}^{i}\)，
+如\autoref{equ:cal_scin_gamma_beta}所示：
+\begin{equation}
+    \label{equ:cal_scin_gamma_beta}
+    \gamma_s^i=F_{FFN}^i(Y_s^i),\beta_s^i=F_{FFN}^i(Y_s^i)
+\end{equation}
+具体来说，对于第i个SCIN Layer，记$F_i$为该层的输出，$D_i$为该层SCIN Layer后跟的解码器层， 
+$F_{(i-1)}$为其上一层的输出。从$Y_s^i$中抽取特征得到\(\gamma_{s}^{i}\)和\(\beta{s}^{i}\)，将这两个特征同上一层SCIN Layer的输出$F_{(i-1)}$相融合，得到输出结果$F_i$。
+如\autoref{equ:cal_scin_fi}所示：
+\begin{equation}
+    \label{equ:cal_scin_fi}
+    F_i=\gamma_s^i\otimes\mathrm{IN}(D_i(F_{i-1}))\oplus\beta_s^i
+\end{equation}
+其中的$\oplus$和$\otimes$运算为逐通道的加法和乘法操作。特别地，当计算\(D_0(F_0)\)的时候，用\(D_0(F_0)=F_{CSl}\)完成计算，其中$F_{CSl}$为上一小节中获得的特征。
+以此计算完四个值后可以得到混合了内容特征、全局风格特征和局部风格特征的结果\(SCIN(F_{CSl},Y_S^1,Y_S^2,Y_S^3,Y_S^4)\)，它就是\(D_4(F_4)\)。
+
+\subsection{PE模块结构}
+
 % \par 如\autoref{alg:sample}，这是一个算法
 
 % \begin{algorithm}[H]
