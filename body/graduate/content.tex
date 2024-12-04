@@ -29,7 +29,7 @@
 \newline \indent
 （1）提出一种基于风格一致性实例归一化和对比学习的2D图像任意风格迁移算法。它由三个模块构成其中风格一致性实例归一化 (SCIN)模块用来提供全局风格信息，该模块使用一个transformer模块作为一个全局的风格提取器，从风格图中提取长程的风格信息，实现从分布上将内容特征与风格特征对齐；基于实例的对比学习(ICL)方法通过图像的潜码空间约束图像的像素级内容，用来学习风格化到风格化的关系、提高风格化质量；并且我们提出了一个新的感知编码器(PE)，它可以捕获风格信息，避免模型过多关注风格图像的显著分类特征。   
 \newline \indent
-（2）提出一种基于多分辨率哈希增量和可变3D高斯点的零样本三维场景风格迁移方法。为了保障风格化的一致性和渲染的快速，考虑到3DGS方法的高效和高质量特性，我们使用3DGS的表示作为场景的建模表示方法。我们使用多分辨率哈希网格来存储每个高斯点的颜色属性的增量信息，这样有利于大量点的查询操作，有效地缓解直接使用MLP做变换导致的大显存占用问题。此外我们还依据高斯点的致密化论次对其进行分层，只选用后生成的层的点进行位置增量计算，减少了部分计算量，同时也实现了视觉效果的优化。
+（2）提出一种基于多分辨率哈希网格和可变3D高斯点的零样本三维场景风格迁移方法。为了保障风格化的一致性和渲染的快速，考虑到3DGS方法的高效和高质量特性，我们使用3DGS的表示作为场景的建模表示方法。我们使用多分辨率哈希网格来存储每个高斯点的颜色属性的增量信息，这样有利于大量点的查询操作，有效地缓解直接使用MLP做变换导致的大显存占用问题。此外我们还依据高斯点的致密化论次对其进行分层，只选用后生成的层的点进行位置增量计算，减少了部分计算量，同时也实现了视觉效果的优化。
 \newline \indent	
 本文提出的方法为场景的任意风格迁移工作提供了新的思路和方向，给相关工作提供了一种新的框架和思路，更好地促进相关需求的高水平实现。
 
@@ -38,7 +38,7 @@
 \par 第一章为绪论，简述了风格迁移的意义和必要性，同时简要介绍了当前风格迁移主要的方法，并指出当前风格迁移领域存在的一些问题，在此基础上阐明了本文的研究目标与内容。 
 \par 第二章是本文相关技术的综述，介绍了现有的2D风格迁移算法的发展历程和现状，同时分析了典型方法的优缺点；也介绍了3D风格迁移算法的技术路线和优缺点；还介绍了对比学习和蒸馏学习方法的基本原理，为后续的章节奠定了理论基础。
 \par 第三章提出了一种基于风格一致性实例归一化和对比学习的2D图像任意风格迁移算法，对该算法的总体架构、损失函数和训练过程作了详细的介绍，并通过丰富的对比实验和消融实验验证了算法的效果。
-\par 第四章提出了一种基于多分辨率哈希增量和可变3D高斯点的零样本三维场景风格迁移方法，对该算法的模型各部分及损失函数、训练过程作了详细的介绍，并通过实验验证了该框架的有效性。
+\par 第四章提出了一种基于多分辨率哈希网格和可变3D高斯点的零样本三维场景风格迁移方法，对该算法的模型各部分及损失函数、训练过程作了详细的介绍，并通过实验验证了该框架的有效性。
 \par 第五章总结了本文的工作成果，肯定了一些创新之处，并且对于存在的一些不足进行了阐述，同时对未来工作进行了展望。
 
 \section{本章小结}
@@ -926,20 +926,20 @@ DS用于衡量人类用户对于各方法生成的风格化结果的判断。本
     \begin{tabularx}{\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering}}
         \hline
         & CF $\Uparrow$ & GE+LP $\Uparrow$ & 推理时间 & DS $\Uparrow$ \\ \hline
-        WikiArt & - & - & - & 0.784 \\ \hline
-        Ours & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} \\ \hline
-        IEAST & 0.412 & 1.405 & 0.759 & 0.476 \\ \hline
-        AdaAttN & 0.380 & 1.430 & 1.684 & 0.372 \\ \hline
-        MAST & 0.360 & 1.511 & 1.471 & 0.324 \\ \hline
-        SANet & 0.366 & 1.552 & 0.759 & 0.346 \\ \hline
-        AdaIN & 0.383 & 1.552 & 0.534 & 0.346 \\ \hline
-        CAST & 0.335 & 1.581 & 0.534 & 0.423 \\ \hline
-        WCT & 0.346 & 1.540 & 4.839 & 0.172 \\ \hline
-        LST & 0.408 & 1.459 & \textbf{0.427} & 0.408 \\ \hline
-        StyTr2 & 0.336 & 1.602 & 32.921 & 0.545 \\ \hline
-        AesUST & 0.420 & 1.524 & 0.783 & 0.568 \\ \hline
-        ArtFlow & 0.411 & 1.505 & 4.530 & 0.356 \\ \hline
-        AAST & 0.368 & 1.461 & 13.674 & 0.307 \\ \hline
+        WikiArt & - & - & - & 0.784 \\ 
+        Ours & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} \\
+        IEAST & 0.412 & 1.405 & 0.759 & 0.476 \\ 
+        AdaAttN & 0.380 & 1.430 & 1.684 & 0.372 \\ 
+        MAST & 0.360 & 1.511 & 1.471 & 0.324 \\ 
+        SANet & 0.366 & 1.552 & 0.759 & 0.346 \\ 
+        AdaIN & 0.383 & 1.552 & 0.534 & 0.346 \\ 
+        CAST & 0.335 & 1.581 & 0.534 & 0.423 \\ 
+        WCT & 0.346 & 1.540 & 4.839 & 0.172 \\ 
+        LST & 0.408 & 1.459 & \textbf{0.427} & 0.408 \\ 
+        StyTr2 & 0.336 & 1.602 & 32.921 & 0.545 \\
+        AesUST & 0.420 & 1.524 & 0.783 & 0.568 \\ 
+        ArtFlow & 0.411 & 1.505 & 4.530 & 0.356 \\
+        AAST & 0.368 & 1.461 & 13.674 & 0.307 \\ 
         CCPL & 0.422 & 1.594 & 0.510 & 0.427 \\ \hline
     \end{tabularx}
 \end{table}
@@ -972,7 +972,7 @@ DS用于衡量人类用户对于各方法生成的风格化结果的判断。本
         \hline
         输入   & 全模型 & 去除 ICL & 去除对抗训练 & 去除 SCIN & 使用预训练 VGG & 使用可学习 VGG \\ \hline
 
-        CF    & \textcolor{orange}{0.432}  & 0.423 & 0.414 & 0.431 & 0.426 & \textcolor{red}{0.435}  \\ \hline
+        CF    & \textcolor{orange}{0.432}  & 0.423 & 0.414 & 0.431 & 0.426 & \textcolor{red}{0.435}  \\
         GE+LP & \textcolor{red}{1.595} & 1.515 & \textcolor{orange}{1.565} & 1.430 & 1.452 & 1.305 \\ \hline
 
     \end{tabularx}
@@ -1245,21 +1245,21 @@ StyleRF在我们的数据集上表现不佳，StyleGaussian方法在部分场景
     \caption{\label{fig:pic_4_cmp_res2}对比结果图2}
 \end{figure}
 \paragraph{定量试验对比}
-我们使用长程和短程一致性指标对我们的结果和其他方法进行场景风格化一致性的定量分析。使用ArtFID和SSIM对风格化的效果进行定量分析。结果如\autoref{tab:tab_res_compare_4}所示
+我们使用长程和短程一致性指标对我们的结果和其他方法进行场景风格化一致性的定量分析。使用ArtFID和SSIM对风格化的效果进行定量分析。结果如\autoref{tab:tab_res_compare_4}所示，
+最高和次高分别用红色、黄色标注。可以看出，我们的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。
 \begin{table}[htbp]
     \centering
     \caption{定量分析结果-第四章}
     \label{tab:tab_res_compare_4}
     \begin{tabularx}{\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering} X<{\centering}  X<{\centering} }
         \hline
-        方法 & Short-range        & Consistency       & Long-range          & Consistency        & ArtFID $\Uparrow$ & SSIM $\Uparrow$ \\
-            & LPIPS $\Downarrow$ &  RMSE $\Downarrow$ &  LPIPS $\Downarrow$&  RMSE $\Downarrow$ &                   &  \\ \hline
-        WikiArt & - & - & - & 0.784 \\ \hline
-        Ours & \textbf{0.432} & \textbf{1.615} & 1.814 & \textbf{0.573} & & \\ \hline
-        IEAST & 0.412 & 1.405 & 0.759 & 0.476 & & \\ \hline
-        IEAST & 0.412 & 1.405 & 0.759 & 0.476 & & \\ \hline
-        IEAST & 0.412 & 1.405 & 0.759 & 0.476 & & \\ \hline
-        IEAST & 0.412 & 1.405 & 0.759 & 0.476 & & \\ \hline
+         & Short-range        & Consistency       & Long-range          & Consistency        &  &  \\
+         方法   & LPIPS $\Downarrow$ &  RMSE $\Downarrow$ &  LPIPS $\Downarrow$&  RMSE $\Downarrow$ &       ArtFID $\Downarrow$ & SSIM $\Uparrow$  \\ \hline
+        Ours & \textcolor{orange}{0.030}        & \textcolor{red}{0.033} & \textcolor{red}{0.069}   & \textcolor{red}{0.071} & \textcolor{orange}{19.7} & \textcolor{orange}{0.53}   \\ 
+        StyleGaussian & \textcolor{red}{0.029} & \textcolor{orange}{0.033} & \textcolor{orange}{0.080} & \textcolor{orange}{0.082} &  35.5  & 0.49  \\ 
+        StyleRF & 0.051            & 0.040            & 0.130            & 0.098            &    39.7        &  0.42 \\ 
+        G-style & 0.060           & 0.036        & 0.101            &  \textcolor{orange}{0.079} &  30.1          &0.51 \\ 
+        AdaIN & 0.111   & 0.087         & 0.162             & 0.135          & \textcolor{red}{18.5}        & \textcolor{red}{0.55} \\ \hline
     \end{tabularx}
 \end{table}
 \subsection{消融试验和分析}
