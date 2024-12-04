@@ -1247,7 +1247,7 @@ StyleRF在我们的数据集上表现不佳，StyleGaussian方法在部分场景
 \paragraph{定量试验对比}
 我们使用长程和短程一致性指标对我们的结果和其他方法进行场景风格化一致性的定量分析。使用ArtFID和SSIM对风格化的效果进行定量分析。结果如\autoref{tab:tab_res_compare_4}所示，
 最高和次高分别用红色、黄色标注。可以看出，我们的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。
-\begin{table}[htbp]
+\begin{table}[htb]
     \centering
     \caption{定量分析结果-第四章}
     \label{tab:tab_res_compare_4}
@@ -1263,7 +1263,27 @@ StyleRF在我们的数据集上表现不佳，StyleGaussian方法在部分场景
     \end{tabularx}
 \end{table}
 \subsection{消融试验和分析}
+在本节中，我们进行了消融分析，以评估所提出HGS在学习风格笔触方面的有效性，其结果如\autoref{fig:fig_abla_4}中画红框所示。
+其中W/. HGS代表使用我们的完整模型，W/O HGS代表不使用我们的HGS部分。可以看到，对于我们采用的风格图，使用HGS的设计和有效地强化了风格图的笔触和线条信息，
+比如红框中的树和车架部分，有着更加好的视觉效果。
 
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\linewidth]{pics/pic_abla4_1.png}
+    \caption{\label{fig:fig_abla_4}对于HGS的消融实验结果图}
+\end{figure}
+
+\par 同时我们也对这一消融操作做了定量分析，比较消融模型和完全模型的ArtFID和SSIM两个分数，如\autoref{tab:tab_abla_4}所示，可以看到我们的完整模型的风格特征好于消融模型，
+这充分证明了我们对外围的高斯点执行分层可变形的训练策略是有效果的。
+\begin{table}[htb]
+    \caption{\label{tab:tab_abla_4}对HGS的消融定量分析结果表}
+    \begin{tabularx}{\linewidth}{c  X<{\centering} X<{\centering}}
+        \hline
+          & W/. HGS & W/O HGS \\ \hline
+        ArtFID $\Downarrow$  & 19.7 & 25.2 \\ 
+        SSIM $\Uparrow$  & 0.53 &  0.50 \\ \hline
+    \end{tabularx}
+\end{table}
 \section{本章小结}
 本章节提出了一种新颖的场景风格迁移方法，它具有快速渲染的特性，可以生成高质量的风格化场景。具体来说，我们把多分辨率哈希网格这一高效、紧凑、自适应的结构应用于3DGS的颜色增量查询，以高效地实现零样本的场景风格化推理。同时，为了更好地拟合风格的笔触和线条等高阶信息，我们采用分层高斯和小型MLP结合的手段，对GS模型的位置和协方差信息进行了小幅度的微调，有效地提升了风格化的视觉效果。同时，我们进行了大量的实验，证明了我们所提方法是有效的和性能优越的。我们通过对比实验证明了我们的方法是更优的，并且通过消融实验证明我们的改进是有效的。
 \par 本章第一小节是引言，介绍和对比了前人的研究缺陷，引入本章的研究内容并归纳了本章的研究成果。第二小节是本章的方法介绍，介绍了我们的方法总述和三阶段的训练流程。随后分别对我们提出的设计和损失函数进行了详细的介绍。第三小节是实验的设计和参数设定，我们对我们的实验环境配置、实验的设定、实验用的数据集和评价实验所用的指标进行了说明。第四小节则对我们的方法进行了直观的结果展示，并且也进行了对比试验，从定性和定量两个角度证明了我们的方法性能优越。同时也对我们提出的模块分别进行了消融实验，验证了所提改进的有效性。
