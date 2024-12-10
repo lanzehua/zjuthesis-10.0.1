@@ -378,16 +378,16 @@ CLIPstyler~\cite{kwon2022clipstyler}引入了一个文本引导的合成模型�
 欺骗分数表示用户把生成的风格化鉴定为真实艺术图像的比率。
 更高的分数意味着该风格化图像被更高比例人鉴定为真实风格化作品。
 客观角度采用内容保真度（Content Fidelity，CF）, 全局影响分数（Global Effects ，GE）和本地图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
-保证指标覆盖了感知和风格化表现这两个方面，用于二维图像风格迁移的效果评估，采用长短期一致性用于三维图像风格迁移的效果评估，
+保证指标覆盖了感知属性和风格化表现这两个方面，用于二维图像风格迁移的效果评估，采用长短期一致性用于三维图像风格迁移的效果评估，
 并且采用ArtFID~\cite{wright2022artfid}和结构相似性（Structural Similarity，SSIM）~\cite{wang2004image}等指标用于场景风格化后渲染得到的2D风格化图像的质量评估，
-采用短程一致性和长程一致性（Short-range Consistency和Long-range Consistency）~\cite{lai2018learning}用于3D场景的风格化一致性质量评估，并在下文对这些指标进行详细解释说明。
+采用短程一致性和长程一致性（Short-range Consistency和Long-range Consistency）~\cite{lai2018learning}用于3D场景的风格化一致性质量评估，我们将在下文对这些指标进行详细解释说明。
 \par CF是用来衡量在多个尺度上对内容特征的忠实度。它基于这样一个看法：令人印象深刻的风格转移结果应该携带足够的风格特征，同时保留明显感知的内容结构。其公式如\autoref{equ:equ_cal_cf}所示：
 
 \begin{equation}
     \label{equ:equ_cal_cf}
     CF(\vec{x},\vec{c})=\frac1N\sum_{l=1}^N\frac{f_l(\vec{x})\cdot f_l(\vec{c})}{\parallel f_l(\vec{x})\parallel\cdot\parallel f_l(\vec{c})\parallel}
 \end{equation}
-其中$\vec{c}$和$\vec{x}$分别是内容图像和风格化结果，\(f_l(\cdot)\)表示从第l层提取的特征激活。N是不同层的数量。
+其中$\vec{c}$和$\vec{x}$分别是内容图像和风格化结果，\(f_l(\cdot)\)表示从第$l$层提取的特征激活。N是不同层的数量。
 \par GE用来衡量全局相似性。在将转移的风格与风格图像进行比较时，人们经常首先欣赏全局效果。全局相似性将对人类视觉感知留下初步印象，
 因此它是衡量风格化质量的重要因素。通过调查作者认为颜色和纹理更容易影响观察者的评估，因此全局效应 (GE) 因子应包括这两个方面，
 即全局颜色 (GC) 和整体纹理 (HT)。对于GC的计算，直接比较颜色直方图的余弦相似度以利用RGB颜色空间中的颜色信息，其计算方式如\autoref{equ:equ_cal_gc}所示,对于HT的计算，
@@ -471,8 +471,8 @@ $\{\Phi_{CM(i)}^l(\vec{s})\}$和$\{\Phi_j^l(\vec{s})\}$
     \mathrm{SSIM}(\mathbf{x},\mathbf{y})=[\mathrm{l}(\mathbf{x},\mathbf{y})]^\alpha\cdot[\mathrm{c}(\mathbf{x},\mathbf{y})]^\beta\cdot[\mathrm{s}(\mathbf{x},\mathbf{y})]^\gamma 
 \end{equation}
 其中的\(\alpha,\beta,\gamma \)分别用于调控三个部分的权重。特别地，当\(\alpha{=}\beta{=}\gamma{=}1\text{,且}C_3=C_2/2\)的时候，
-SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是计算SSIM常用的形式。需要指出，SSIM计算实在每个图像局部块上，最后需要pooling来得出整幅图像分数，
-论文采用的是简单的average pooling方式，即求平均值。
+SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是计算SSIM常用的形式。需要指出，SSIM计算实在每个图像局部块上，最后需要经过池化操作(pooling)来得出整幅图像分数，
+论文采用的是简单的平均池化(average pooling)方式。
 \begin{equation}
     \label{equ:equ_cal_ssim_simplified}
     \mathrm{SSIM}(\mathbf{x},\mathbf{y})=\frac{(2\mu_\mathrm{x}\mu_\mathrm{y}+\mathrm{C}_1)(2\sigma_\mathrm{xy}+\mathrm{C}_2)}{(\mu_\mathrm{x}^2+\mu_\mathrm{y}^2+\mathrm{C}_1)(\sigma_\mathrm{x}^2+\sigma_\mathrm{y}^2+\mathrm{C}_2)}
@@ -484,7 +484,7 @@ SSIM可以简化为如\autoref{equ:equ_cal_ssim_simplified}的形式，这也是
 我们把这一指标记录为\(LPIPS(X_c^{(i)},X_g^{(i)})\)。LPIPS的计算公式不是简单的数学公式，而是通过深度神经网络来实现的。
 通常，LPIPS模型使用两幅图像作为输入，然后输出它们之间的感知相似性分数。
 LPIPS模型的具体架构和参数是经过大规模训练得到的，用于捕捉图像的感知信息，其计算方式如\autoref{alg:alg_lpips}所示：
-\begin{algorithm}[H]
+\begin{algorithm}[htb]
     \begin{algorithmic} % enter the algorithmic environment
         \REQUIRE $pytorch$
         \ENSURE $pic1 \quad exists, \quad pic2 \quad exists$
