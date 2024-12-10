@@ -412,8 +412,9 @@ CLIPstyler~\cite{kwon2022clipstyler}引入了一个文本引导的合成模型�
 受到人类评估中考虑的元素的启发，该LP 因子由两部分组成，一是直接评估局部模式对应物的相似性，
 二是比较检索到的模式类别的多样性。一个好的风格化结果应该类似于风格图像，不仅在相应的局部模式中，而且在检索到的模式类别的多样性上。首先用神经网络对神经特征
 \(f_l(\vec{x})\)和\(f_l(\vec{s})\)提取一组3 × 3的块（patch），记为\(\{\Phi_i^l(\vec{x})\}_{i\in n_x}\)和\(\{\Phi_j^l(\vec{s})\}_{j\in n_s}\)，
-其中$n_x$和$n_s$分别是内容图像和风格图像的块数。对于每一个\(\Phi_i^l(\vec{x})\)，我们根据以下归一化相关度确定最匹配的样式块\(\Phi_{CM(i)}^l(\vec{s})\)，
-如\autoref{equ:equ_cal_tmp_phi_cmi}所示：
+其中$n_x$和$n_s$分别是内容图像和风格图像的块数。对于每一个\(\Phi_i^l(\vec{x})\)，
+我们根据如\autoref{equ:equ_cal_tmp_phi_cmi}所示的归一化相关度确定最匹配的样式块\(\Phi_{CM(i)}^l(\vec{s})\)：
+
 \begin{equation}
     \label{equ:equ_cal_tmp_phi_cmi}
     \Phi_{CM(i)}^l(\vec{s}){:}=\arg\max_{j=1,...,n_s}\frac{\Phi_i^l(\vec{x})\cdot\Phi_j^l(\vec{s})}{\parallel\Phi_i^l(\vec{x})\parallel\cdot\parallel\Phi_j^l(\vec{s})\parallel}
@@ -518,13 +519,12 @@ LPIPS模型的具体架构和参数是经过大规模训练得到的，用于捕
 长程一致性指标使用互相间隔7帧的两帧进行计算。其计算细节如下：给定从角度u和角度v渲染出的风格化图像\(\tilde{\mathcal{J}}_u\text{和}\tilde{\mathcal{J}}_v\)
 和对应的非风格化图像\(J_u\text{和}J_v\)，首先使用\(J_u\text{和}J_v\)计算光流和遮挡掩码$\mathcal{O}$，在本文中使用预训练的FlowNet2.0~\cite{ilg2017flownet}来计算光流，
 根据计算好的光流，把v角度的风格化图像\(\tilde{\boldsymbol{\jmath}}_{\boldsymbol{v}}\)扭曲到u角度的风格化图像\(\tilde{\boldsymbol{\jmath}}_{\boldsymbol{u}}\)
-，最终获得的一致性指标计算方式如\autoref{equ:equ_cal_consistency}所示：
-其中\((\mu_s,\Sigma_s)\text{和}(\mu_g,\Sigma_g)\)分别是风格图和风格化图像的Inception特征~\cite{szegedy2016rethinking}的均值和协方差。
+，最终获得的一致性指标计算方式如\autoref{equ:equ_cal_consistency}所示，其中$|\mathcal{O}|$代表着$\mathcal{O}$中未被遮挡的像素个数。
 \begin{equation}
     \label{equ:equ_cal_consistency}
     \mathcal{E}_\text{consistency}{(\tilde{J}_u,\tilde{J}_v)}=\frac1{|\mathcal{O}|}\left\|\tilde{J}_u-\check{J}_u\right\|_2^2
 \end{equation}
-其中$|\mathcal{O}|$代表着$\mathcal{O}$中未被遮挡的像素个数。
+
 
 
 \section{本章小结}
