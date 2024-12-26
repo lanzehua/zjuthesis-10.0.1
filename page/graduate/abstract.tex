@@ -25,8 +25,8 @@ Style transfer can be applied to both 2D images and 3D scenes. There are some pr
 In 2D scenes, the style transfer is not fine enough to achieve a good balance between local and global style. 
 However, the existing 3D scene style transfer techniques have some problems in multi-view consistency, training and inference speed, and generation quality to varying degrees. 
 To address the above problems, we design a new arbitrary style transfer algorithm for 2D images and propose a fast zero-shot style transfer method for 3D scenes that supports different style transfer methods. The specific work mainly includes the following two aspects:
-\newline \indent(1) An arbitrary style transfer algorithm for 2D images based on style consistency instance normalization and contrastive learning. 
-The Style Consistency Instance Normalization (SCIN) module is used to capture remote and global style correlations. 
+\newline \indent(1) An arbitrary style transfer algorithm for 2D images based on style-content instance normalization and contrastive learning. 
+The Style-Content Instance Normalization (SCIN) module is used to capture remote and global style correlations. 
 This aligns content features with style features; 
 Instance-based Contrastive learning (ICL) is used to learn stylization relationships and eliminate artifacts. 
 And we propose a novel perceptual encoder (PE), 
