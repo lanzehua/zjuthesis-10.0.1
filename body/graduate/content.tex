@@ -129,7 +129,7 @@ CCPL可以在风格转换过程中保持较高的风格化质量和内容源的�
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/diff_attn_p1}
-    \caption{\label{fig:diff_adain_sanet_adaattn}三种方法在计算上的差别示意图}
+    \caption{\label{fig:diff_adain_sanet_adaattn}三种方法在计算上的差别示意图~\cite{liu2021adaattn}}
 \end{figure}
 
 AdaAttN的总体流程如下：首先从VGG编码器的低层到高层依次计算包含内容和风格特征的注意力图，其中注意力机制是逐层计算的，用来衡量内容和风格特征之间的相似性。
@@ -185,7 +185,7 @@ NeRF方法~\cite{mildenhall2021nerf}由谷歌高级研究科学家Jon Barron在2
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/nerf.png}
-    \caption{\label{fig:nerf_show}NeRF方法的流程图}
+    \caption{\label{fig:nerf_show}NeRF方法的流程图~\cite{mildenhall2021nerf}}
 \end{figure}
 
 
@@ -218,7 +218,7 @@ $T(t)=\exp{(-\int_{t_n}^t\sigma(\mathbf{r}(s))ds)}$表示t处的不透明度。
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/nerf_net.png}
-    \caption{\label{fig:nerf_net}NeRF方法的网络架构图}
+    \caption{\label{fig:nerf_net}NeRF方法的网络架构图~\cite{mildenhall2021nerf}}
 \end{figure}
 
 
@@ -328,7 +328,7 @@ Li等人~\cite{li2023instant}提出了快速神经辐射场风格化（Instant N
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/3dgspipeline.png}
-    \caption{\label{fig:3dgspipline}3DGS方法的管线图}
+    \caption{\label{fig:3dgspipline}3DGS方法的管线图~\cite{kerbl20233d}}
 \end{figure}
 
 具体来说，本文提出的方法优化从稀疏的SfM点云开始，初始化创建一组3D高斯，其将几何形状建模为一组不需要法线的3D高斯曲线。
@@ -377,7 +377,7 @@ CLIP模型的核心思想是通过最大化图像表示与其相应文本描述�
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/clip_introduction.png}
-    \caption{\label{fig:clip_intro}CLIP方法示意图}
+    \caption{\label{fig:clip_intro}CLIP方法示意图~\cite{radford2021learning}}
 \end{figure}
 \par 训练和优化：在定义损失函数后，模型会使用大量数据集（主要是未标记的数据集）进行训练。这个训练过程是迭代的，通过不断更新模型的参数以最小化损失函数。这种迭代优化逐步细化所学习到的表示，从而增强模型有效区分和区分相似和不相似实例的能力。
 \par 在风格迁移的领域，Chen等人~\cite{chen2021artistic}首先基于预训练的VGG模型构建正样本和负样本，以学习风格化到风格化的关系。Zhang等人~\cite{zhang2022domain}全面介绍了使用视觉特征进行风格表示的对比学习，以表示任意风格转移的风格。Wu等人~\cite{wu2022ccpl}设计了一种通用的对比相干保持损失来学习局部斑块。
@@ -940,7 +940,7 @@ DS用于衡量人类用户对于各方法生成的风格化结果的判断。在
 定量比较的结果如\autoref{tab:tab_res_compare_3}所示。其中，“推理时间”表示指使用我们的设备硬件、以端到端方式把512$\times$512像素的图片输入进行推理所消耗的时间。
 \begin{table}[htbp]
     \centering
-    \caption{定量分析结果-第三章}
+    \caption{二维图像风格迁移的定量分析结果}
     \label{tab:tab_res_compare_3}
     \begin{tabularx}{\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering}}
         \hline
@@ -1268,7 +1268,7 @@ StyleRF在我们的数据集上表现不佳，StyleGaussian方法在部分场景
 最高和次高分别用红色、黄色标注。可以看出，我们的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。
 \begin{table}[htb]
     \centering
-    \caption{定量分析结果-第四章}
+    \caption{三维场景风格迁移的定量分析结果}
     \label{tab:tab_res_compare_4}
     \begin{tabularx}{\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering} X<{\centering}  X<{\centering} }
         \hline
