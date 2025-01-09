@@ -596,14 +596,14 @@ LST~\cite{li2019learning}、AAST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}
 具体来说，本章使用Transformer的encoder作为全局风格提取器，以从风格图像中捕获风格信息的非局部的、不明显的依赖关系。Transformer编码器输出尺度和偏置参数，用于调整内容特征的全局信息，匹配风格图像的特征分布，最终能学习到风格的全局一致性特征。
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{pics/pic_3.1.1_combined1y.png}
+    \includegraphics[width=.85\linewidth]{pics/pic_3.1.1_combined1y.png}
     \caption{\label{fig:show_diff_pic1}现有的方法在一些特定的风格化图像上的缺陷1}
 \end{figure}
 \par 在约束方面，现有的风格迁移方法通常使用内容损失和风格损失来确保内容图到风格化图像和风格图到风格化图像的关系。然而，它们往往忽略了这样一种事实：从直观上讲，在内容图不变的情况下，用同一风格的图像获得的风格化图像应该比用不同风格的图像获得的结果在风格上有更近的关系；
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{pics/pic_3.1.1_combined2y.png}
+    \includegraphics[width=.85\linewidth]{pics/pic_3.1.1_combined2y.png}
     \caption{\label{fig:show_diff_pic2}现有的方法在一些特定的风格化图像上的缺陷2}
 \end{figure}同样地，基于相同的内容图像的风格化结果应该比基于不同内容图像的风格化结果在内容上有更近的关系。在本章中把这种关系称为风格化与风格化的关系。现有的大多方法没有考虑风格化到风格化的关系，而这对风格迁移也至关重要。IEAST~\cite{chen2021artistic}提出了两个对比损失，首次针对风格迁移中的风格化与风格化的关系这一问题进行了探索。在他们的启发下，本章提出了一种新的基于实例的对比学习(Instance-based Contrastive Learning，ICL)，当多个风格化嵌入共享相同的内容或风格时，该策略促使它们相互靠近，但在其他情况下被促使分开。
 \par 同时，注意到大多数的基于注意力的方法一般采用预训练的VGG编码器作为风格提取器，
@@ -906,14 +906,13 @@ WikiArt数据集由WikiArt组织创建和维护。它包含来自 195 位不同�
 
 \section{实验结果和分析}
 在本节中，首先展示本章所提出的方法在数据集上进行实验后获得的风格迁移结果，然后展示本算法与近年来表现较好的一些二维任意风格迁移算法之间的效果对比，包括定性对比与定量对比，最后对本算法中提出的几个创新模块进行消融实验以验证每个模块的有效性。
-\subsection{结果展示}
-在本小节中，随机选择了一些风格图和内容图进行了实验得到了一些风格化图像，并将其展示在\autoref{fig:pic_direct_show_3_1}和\autoref{fig:pic_direct_show_3_2}中。每个图的第一行、第二行、第三行分别为风格图、内容图和风格化图。从中可以看出本章提出的方法对于各种风格都有着较好的风格化能力，其风格化结果存在较少的伪影，没有人眼等显著的实物特征，并且风格图和风格化结果之间具有相应的笔触、线条等风格特征。
-
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/showres_direct3.1.png}
     \caption{\label{fig:pic_direct_show_3_1}风格化结果展示图1}
 \end{figure}
+\subsection{结果展示}
+在本小节中，随机选择了一些风格图和内容图进行了实验得到了一些风格化图像，并将其展示在\autoref{fig:pic_direct_show_3_1}和\autoref{fig:pic_direct_show_3_2}中。每个图的第一行、第二行、第三行分别为风格图、内容图和风格化图。从中可以看出本章提出的方法对于各种风格都有着较好的风格化能力，其风格化结果存在较少的伪影，没有人眼等显著的实物特征，并且风格图和风格化结果之间具有相应的笔触、线条等风格特征。
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{pics/showres_direct3.2.png}
@@ -925,16 +924,16 @@ WikiArt数据集由WikiArt组织创建和维护。它包含来自 195 位不同�
 MAST~\cite{deng2020arbitrary}、SANet~\cite{park2019arbitrary}、AesUst~\cite{wang2022aesust}、SttyTr2~\cite{deng2022stytr2}、
 非基于注意力的风格迁移：AdaIN~\cite{huang2017arbitrary}、DEAST~\cite{zhang2022domain}、WCT~\cite{li2017universal}、ArtFlow~\cite{an2021artflow}、
 LST~\cite{li2019learning}、AST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}。比较的结果如\autoref{fig:pic_compare_3_1}和\autoref{fig:pic_compare_3_2}所示。
-IEAST、AdaAttN、MAST、SANet 和 AesUST 有时会从样式图像引入不希望的语义结构到风格化结果。
-WCT 在内容保存方面存在严重的问题。AdaIN存在内容结构模糊和样式模式失真问题。StyTr2、DEAST、ArtFlow 和 LST 无法从样式图像中学习局部纹理。
-虽然 CCPL 可以有效地保持内容结构，但它的结果中颜色分布较为混乱和无序，下图中粉色的区域无法判断语义信息。
-对于 AAST，风格图像和风格化图像之间存在明显的风格偏差。与这些方法相比，本章提出的方法可以生成具有内容结构和风格纹理的风格化图像，并且不引入无法解释的语义结构。
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
     \includegraphics[width=\linewidth]{pics/pic_compare_3.1.png}
     \caption{\label{fig:pic_compare_3_1}风格化结果对比图1}
 \end{figure}
-\begin{figure}[htbp]
+从图中可以看出IEAST、AdaAttN、MAST、SANet 和 AesUST 有时会从样式图像引入不希望的语义结构到风格化结果。
+WCT 在内容保存方面存在严重的问题。AdaIN存在内容结构模糊和样式模式失真问题。StyTr2、DEAST、ArtFlow 和 LST 无法从样式图像中学习局部纹理。
+虽然 CCPL 可以有效地保持内容结构，但它的结果中颜色分布较为混乱和无序，下图中粉色的区域无法判断语义信息。
+对于 AAST，风格图像和风格化图像之间存在明显的风格偏差。与这些方法相比，本章提出的方法可以生成具有内容结构和风格纹理的风格化图像，并且不引入无法解释的语义结构。
+\begin{figure}[htb]
     \centering
     \includegraphics[width=\linewidth]{pics/pic_compare_3.2.png}
     \caption{\label{fig:pic_compare_3_2}风格化结果对比图2}
@@ -970,8 +969,9 @@ DS用于衡量人类用户对于各方法生成的风格化结果的判断。在
 \end{table}
 可以看出，本章提出的方法在内容保存和感知风格方面的两项客观评价指标以及主观指标中都有较好的表现。同时可以看到该方法也有着较快的速度，可以作为任意风格迁移算法使用。
 \subsection{消融实验和分析}
-为了确保所提出方法的有效性，在本节中进行了消融分析，其结果如\autoref{fig:pic_abla_3_1}，\autoref{fig:pic_abla_3_2}中画红框所示。为了清晰可见，故而采用较大的图排布方式。
-可以看到，当去除ICL模块时，风格化图像的质量在内容结构、纹理和笔画笔触的一致性方面会下降。
+为了确保所提出方法的有效性，在本节中进行了消融分析，
+其结果如\autoref{fig:pic_abla_3_1}，\autoref{fig:pic_abla_3_2}中画红框所示。
+为了清晰可见，故而采用较大的图排布方式。可以看到，当去除ICL模块时，风格化图像的质量在内容结构、纹理和笔画笔触的一致性方面会下降。
 当去除$L_{Adv}$时，生成的风格化图像表现出明显不和谐的图样和明显的伪影，导致质量下降。这表明对抗性训练对于生成更和谐和逼真的风格化图像是重要的。
 
 \begin{figure}[htb]
@@ -1021,7 +1021,7 @@ VGG可以有效地捕捉显著的分类特征(如眼睛)。这使得它保留了
 \section{引言}
 近年来，随着对3D场景表示方法的研究逐渐深入，人们对3D场景风格迁移的研究兴趣也逐渐增加。
 这一任务是3D编辑任务的一个方向，是为了把给定媒介（一般是图像）的风格转移到一个适当表示的三维场景中，
-并且不破坏原有场景的内容特征。这一任务的实现通常需要高性能的场景的表示方法作为前提。
+并且不破坏原有场景的内容特征。这一任务的实现通常需要高性能的场景的表示方法作为前提。而零样本的风格迁移，由于其对数据的需求更低、在推理的时候更加快捷方便、有更好的领域适应性，更加具有实际应用的意义，在实际应用中也更具有挑战性。
 现行的方法通常采用点云体素、NeRF~\cite{mildenhall2021nerf}或者3DGS~\cite{kerbl20233d}作为场景表示方法进行建模。使用点云的做法~\cite{huang2021learning,mu20223d,yin20213dstylenet}出现的较早，
 由于无法实现零样本的风格迁移并且其本身的场景表达能力有限，其场景的渲染速度和渲染质量都不如新的方法，已经逐渐在这一领域被NeRF和3DGS给替代。
 NeRF自其出现开始，就一直被作为一种通用的 3D 场景表示方法，它可以被用于许多任务，比如场景生成和编辑，动态场景渲染，大规模场景渲染等。
@@ -1039,11 +1039,11 @@ NeRF方法有着高保真渲染的能力，并且它的隐式特性能够提供�
 因此，它们被认为不适合直接用于3D 风格迁移。现有的3D风格迁移方法普遍可以用这样一个流程范式来大致描述：
 首先采用特定的能够支持多视图表示的方法对场景本身进行建模表达，然后使用不同的方法把风格图像的风格融合到场景表示中，
 再采用解码器组件把新的风格解码出来。现有的几个方法~\cite{saroha2024gaussian,jain2024stylesplat,zhang2024stylizedgs,chen2024gaussianeditor,liu2024stylegaussian}
-考虑使用3DGS作为场景表示方法并且进行了场景风格迁移的探索，然而这些方法不会改变表示场景的高斯的位置和形状，这导致场景的某些区域的分辨率较低。
-除了上述问题外，现有的3D 风格迁移方法只关注从风格图像中迁移高频模式，比如笔触或颜色统计，而忽略了风格的低频部分，这导致风格化结果不够优良。
-同时，部分方法无法做到零样本迁移，或者对算力和硬件要求较高，也存在训练推理速度较慢等问题。
+考虑使用3DGS作为场景表示方法并且进行了场景风格迁移的探索，然而这些方法不会改变表示场景的高斯的位置和形状，这导致场景的某些区域的分辨率较低。另外，现有方法实现零样本风格迁移的方式通常是采用一个额外的网络以学习大量风格图像的风格特征，而为了存储大量的风格特征，这种方法通常需要较大的存储空间和计算量。
+除了上述问题外，现有的3D风格迁移方法只关注从风格图像中迁移高频模式，比如笔触或颜色统计，而忽略了风格的低频部分，这导致风格化结果不够优良。
+总的来说，当前的大多数方法或者无法做到零样本迁移，或者对算力和硬件要求较高，也存在训练推理速度较慢等问题。
 \par 为了解决这些问题，实现一个\textbf{高质量、零样本、低开销的3D任意风格迁移算法}，受到Instant-NGP~\cite{muller2022instant}这一工作的启发，
-本章提出使用多分辨率哈希网格（Multi Resolution Hash Grid，MRHG），通过对每个高斯点的颜色增量进行查询，实现零样本迁移和存储风格信息。
+本章提出使用多分辨率哈希网格（Multi Resolution Hash Grid，MRHG），通过对每个高斯点的颜色增量进行查询，实现风格信息的存储。
 对于每个高斯点，将其位置信息输入到MRHG中查询得到包含了位置信息的风格特征向量，
 再把该风格特征向量和风格图经过编码器产生得到的风格向量和一起输入到小型MLP中，获得对应于某特定风格下的每一个高斯点的颜色属性增量，
 最后将其加起来得到新的高斯点颜色属性。为了更好地模拟风格这一概念，本章认为可以适当地对场景高斯进行一些调整，
@@ -1271,6 +1271,8 @@ StyleRF在采用的MipNerf 360数据集~\cite{barron2022mip}上表现不佳，St
 \paragraph{定量试验对比和分析}
 在本小节中，使用长程和短程一致性指标，对本方法的结果和其他方法进行场景风格化一致性的定量分析。使用ArtFID和SSIM对风格化的效果进行定量分析。结果如\autoref{tab:tab_res_compare_4}所示，
 最高和次高分别用红色、黄色标注。可以看出，本章提出的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。
+\par 为了证明本章提出的方法很好地节省了计算资源，本节还对本方法和StyleGaussian方法~\cite{liu2024stylegaussian}在训练时的显存占用进行了测试，
+结果显示，在本文所采用的硬件条件下，对于同一场景（Caterpillar），StyleGaussian方法占用约18738MB的显存，而本方法只占用约14969MB的显存，大约节约了$20\%$的显存，可以证明本文的方法实现了减少参数量的目的。
 \begin{table}[htb]
     \centering
     \caption{三维场景风格迁移的定量分析结果}
