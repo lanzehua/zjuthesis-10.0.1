@@ -4,41 +4,25 @@
 \setlength{\parindent}{2em} 
 近年来，风格迁移技术，作为一种将特定艺术风格应用到给定图像或场景内容中的技术，已经成为数字艺术创作的重要工具。
 风格迁移用途广泛，能应用到2D 图像上，也可以应用到 3D 场景上。现有的风格迁移技术在 2D 和 3D 方面的应用都存在一些问题，
-在 2D 场景中，风格的迁移不够精细、不能很好地实现局部和全局风格的平衡。
-而现有的 3D 场景风格迁移技术，均不同程度地在多视角一致性、训练推理速度、生成质量等方面存在一些问题。
+在 2D 图像中，风格迁移的纹理不够协调、存在伪影，或者需要较长时间进行推理和训练。
+而现有的 3D 场景风格迁移技术，均不同程度地存在多视角一致性低、无法零样本、参数过多、生成质量不够高等问题。
 针对上述问题，本文设计了一个新的 2D 图像任意风格迁移算法，并提出了一个支持不同风格迁移方法的零样本 3D 场景快速风格迁移方法。具体工作主要包括以下两个方面：
-\newline \indent（1）提出一种基于风格-内容实例归一化和对比学习的2D图像任意风格迁移算法。其中风格-内容实例归一化 (SCIN)模块用来捕获远程和全局的风格相关性。
-这可以将内容特征与风格特征对齐；基于实例的对比学习(ICL)方法用来学习风格化到风格化的关系并消除伪影；
-并且我们提出了一个新的感知编码器(PE)，它可以捕获风格信息，避免模型过多关注风格图像的显著分类特征。   
+\newline \indent（1）提出一种基于风格-内容实例归一化和对比学习的2D图像任意风格迁移算法。其中风格-内容实例归一化模块用来捕获远程和全局的风格相关性。
+这可以将内容特征与风格特征对齐，它能有效提升纹理协调性，实现局部和全局风格较好地平衡；基于实例的对比学习方法用来学习风格化到风格化的关系并消除伪影；
+并且我们提出了一个新的感知编码器，它可以捕获风格信息，避免模型过多关注风格图像的显著分类特征，也能帮助消除伪影，提高风格化质量。实验结果证明本方法在实现前述效果的同时，能够使推理时间保持在一个合理的水平，以端到端方式进行512x512分辨率的图像风格化的时间在2s以内。
 \newline \indent（2）基于多分辨率哈希网格和可变3D高斯点的零样本三维场景风格迁移方法。
-该方法使用3DGS的表示作为场景的建模表示方法，以保障风格化的一致性，和利用它的实时渲染特性实现快速风格化。
-采用球谐函数的增量来表示高斯点的颜色变化量，并且使用多分辨率哈希网格来实现大量点的增量查询并缓解直接使用神经网络做变换导致的大显存占用问题。
-此外我们还依据高斯点的致密化轮次对其进行分层，只选用外层的点进行位置增量计算，减少了部分计算量的同时也实现了视觉效果的优化。
+该方法使用三维高斯飞溅的表示作为场景的建模表示方法，以保障风格化的一致性，和利用它的实时渲染特性实现快速风格化。
+采用球谐函数的增量来表示高斯点的颜色变化量，并且使用多分辨率哈希网格来实现大量点的增量查询，保障方法零样本的能力，并缓解直接使用神经网络做变换导致的参数过多和大显存占用问题。
+此外我们还依据高斯点的致密化轮次对其进行分层，只选用外层的点进行位置增量计算，减少了部分计算量的同时也实现了视觉效果的优化。实验证明本方法相比现有方法，能够节约约$20\%$的显存占用，也能提高风格化的质量。
 \newline
 {\addfontfeatures{FakeBold=2.0}\textbf{关键词:}}
-任意风格迁移；3D高斯飞溅；零样本推理；多分辨率哈希网格
+风格迁移；零样本推理；3D高斯飞溅；多分辨率哈希网格
 
 \cleardoublepage
 \chapternonum{Abstract}
-In recent years, style transfer techniques, as a way of applying a specific artistic style to a specified image or scene content, has become an important tool for digital art creation. 
-Style transfer can be applied to both 2D images and 3D scenes. There are some problems in the application of existing style transfer techniques in 2D and 3D. 
-In 2D scenes, the style transfer is not fine enough to achieve a good balance between local and global style. 
-However, the existing 3D scene style transfer techniques have some problems in multi-view consistency, training and inference speed, and generation quality to varying degrees. 
-To address the above problems, we design a new arbitrary style transfer algorithm for 2D images and propose a fast zero-shot style transfer method for 3D scenes that supports different style transfer methods. The specific work mainly includes the following two aspects:
-\newline \indent(1) An arbitrary style transfer algorithm for 2D images based on style-content instance normalization and contrastive learning. 
-The Style-Content Instance Normalization (SCIN) module is used to capture remote and global style correlations. 
-This aligns content features with style features; 
-Instance-based Contrastive learning (ICL) is used to learn stylization relationships and eliminate artifacts. 
-And we propose a novel perceptual encoder (PE), 
-which can capture style information and avoid the model focusing too much on the salient classification features of style images.
-\newline \indent(2) A zero-shot 3D scene style transfer method based on multi-resolution hash grid and variable 3D Gaussian points. 
-In this method, 3DGS is used as the modeling representation of the scene to ensure the consistency of the style, 
-and its real-time rendering feature is used to achieve fast stylization. 
-The increment of spherical harmonic function is used to represent the color change of Gaussian points, 
-and the multi-resolution hash grid is used to realize the incremental query of a large number of points and alleviate the problem of large video memory usage caused by directly using neural network to transform.
-In addition, Gaussian points are stratified according to their densification rounds, 
-and only the points in the outer layer are selected for position incremental calculation, 
-which reduces part of the calculation and realizes the optimization of visual effects.
+In recent years, style transfer technology, as a technique to apply a specific artistic style to the content of a given image or scene, has become an important tool for digital art creation. Style transfer is very versatile and can be applied to 2D images as well as 3D scenes. There are some problems in the application of existing style transfer techniques in 2D and 3D. In terms of 2D images, the texture of style transfer is not coordinated enough, there are artifacts, or it takes a long time to reason and train. However, the existing 3D scene style transfer technology has the problems of low multi-view consistency, unable for zero-shot inferring, too many parameters, and not high enough generation quality. To solve the above problems, this paper designs a new algorithm for arbitrary style transfer of 2D images, and proposes a fast style transfer method for zero-sample 3D scenes that supports different style transfer methods. The specific work mainly includes the following two aspects:
+\newline \indent(1) A 2D image arbitrary style transfer algorithm based on style-content instance normalization and contrast learning is proposed. The style-content instance normalization module is used to capture remote and global style correlations. This can align content features with style features, which can effectively improve texture coordination and achieve a good balance between local and global styles. The instance-based comparative learning method is used to learn the relationship from stylization to stylization and eliminate artifacts. And we propose a new perceptual encoder, which can capture style information, avoid the model to pay too much attention to the salient classification features of style images, and also help to eliminate artifacts and improve the quality of stylization. The experimental results show that the proposed method can achieve the above effects and keep the inference time at a reasonable level, and the time for the end to end image stylization of 512x512 resolution is less than 2s.
+\newline \indent(2) A zero-shot 3D scene style transfer method based on multi-resolution hash grid and variable 3D Gaussian points. In this method, 3D Gaussian splatting is used as the modeling representation of the scene to ensure the consistency, and its real-time rendering property is used to achieve fast stylization. The increment of spherical harmonic function is used to represent the color change of Gaussian points, and the multi-resolution hash grid is used to realize the incremental query of a large number of points, which ensures the ability of zero-shot of the method and reduces the problem of too many parameters and large memory consumption caused by directly using neural network to transform. In addition, Gaussian points are stratified according to their densification rounds, and only the points in the outer layer are selected for position incremental calculation, which reduces part of the calculation and realizes the optimization of visual effects. Experimental results show that our method can save about 20% memory usage and improve the quality of stylization compared with the existing methods.
 \newline
 {\addfontfeatures{FakeBold=2.0}\textbf{Keywords:}} 
-Arbitrary Style Transfer; 3D Gaussian Splatting; Zero-Shot Inference; Multi-Resolution Hash Grid
+Style Transfer;  Zero-Shot Inference; 3D Gaussian Splatting; Multi-Resolution Hash Grid
