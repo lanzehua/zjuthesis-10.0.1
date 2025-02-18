@@ -1271,22 +1271,22 @@ StyleRF在采用的MipNerf 360数据集~\cite{barron2022mip}上表现不佳，St
 \end{figure}
 \paragraph{定量试验对比和分析}
 在本小节中，使用长程和短程一致性指标，对本方法的结果和其他方法进行场景风格化一致性的定量分析。同时也使用ArtFID和SSIM对风格化的质量进行定量分析。结果如\autoref{tab:tab_res_compare_4}所示，
-在表中最高和次高分别用红色、黄色标注。可以看出，本章提出的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。
+在表中最高和次高分别用红色、黄色标注。可以看出，本章提出的方法能够做到在风格化效果对标2D风格化方法的同时，保持了场景的较高一致性。同时也能看到，充分地训练后，本方法有很高的推理速度，仅次于用做对比的AdaIN~\cite{huang2017arbitrary}方法。
 \par 为了证明本章提出的方法很好地节省了计算资源，本节还对本方法和StyleGaussian方法~\cite{liu2024stylegaussian}在训练时的显存占用进行了测试，
 结果显示，在本文所采用的硬件条件下，对于同一场景（Caterpillar），StyleGaussian方法占用约18738MB的显存，而本方法只占用约14969MB的显存，大约节约了$20\%$的显存，可以证明本文的方法实现了减少参数量的目的。
 \begin{table}[htb]
     \centering
     \caption{三维场景风格迁移的定量分析结果}
     \label{tab:tab_res_compare_4}
-    \begin{tabularx}{\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering} X<{\centering}  X<{\centering} }
+    \begin{tabularx}{.9\textwidth}{c X<{\centering} X<{\centering} X<{\centering} X<{\centering} X<{\centering}  X<{\centering}  X<{\centering}}
         \hline
-         & Short-range        & Consistency       & Long-range          & Consistency        &  &  \\
-         方法   & LPIPS $\Downarrow$ &  RMSE $\Downarrow$ &  LPIPS $\Downarrow$&  RMSE $\Downarrow$ &       ArtFID $\Downarrow$ & SSIM $\Uparrow$  \\ \hline
-        Ours & \textcolor{orange}{0.030}        & \textcolor{red}{0.033} & \textcolor{red}{0.069}   & \textcolor{red}{0.071} & \textcolor{orange}{19.7} & \textcolor{orange}{0.53}   \\ 
-        StyleGaussian & \textcolor{red}{0.029} & \textcolor{orange}{0.033} & \textcolor{orange}{0.080} & \textcolor{orange}{0.082} &  35.5  & 0.49  \\ 
-        StyleRF & 0.051            & 0.040            & 0.130            & 0.098            &    39.7        &  0.42 \\ 
-        G-style & 0.060           & 0.036        & 0.101            &  \textcolor{orange}{0.079} &  30.1          &0.51 \\ 
-        AdaIN & 0.111   & 0.087         & 0.162             & 0.135          & \textcolor{red}{18.5}        & \textcolor{red}{0.55} \\ \hline
+         & Short-range        & Consistency       & Long-range          & Consistency        &  &  & \\
+         方法   & LPIPS $\Downarrow$ &  RMSE $\Downarrow$ &  LPIPS $\Downarrow$&  RMSE $\Downarrow$ &       ArtFID $\Downarrow$ & SSIM $\Uparrow$ & 推理时间 \\ \hline
+        Ours & \textcolor{orange}{0.030}        & \textcolor{red}{0.033} & \textcolor{red}{0.069}   & \textcolor{red}{0.071} & \textcolor{orange}{19.7} & \textcolor{orange}{0.53}  &\textcolor{orange}{0.988} \\ 
+        StyleGaussian & \textcolor{red}{0.029} & \textcolor{orange}{0.033} & \textcolor{orange}{0.080} & \textcolor{orange}{0.082} &  35.5  & 0.49 &1.983 \\ 
+        StyleRF & 0.051            & 0.040            & 0.130            & 0.098            &    39.7        &  0.42 & 24.223\\ 
+        G-style & 0.060           & 0.036        & 0.101            &  \textcolor{orange}{0.079} &  30.1          &0.51 & 31.357\\ 
+        AdaIN & 0.111   & 0.087         & 0.162             & 0.135          & \textcolor{red}{18.5}        & \textcolor{red}{0.55} & \textcolor{red}{0.423}\\ \hline
     \end{tabularx}
 \end{table}
 \subsection{消融试验和分析}
