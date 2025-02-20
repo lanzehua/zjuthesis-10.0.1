@@ -30,7 +30,7 @@
 随着场景建模和表征技术的发展和迭代，尽管现有 3D 场景迁移模型已取得一定成效，但由于MLP本身结构的缺陷，对模型属性进行整体的修改需要大量的存储空间和计算代价；而为了减小代价需要放弃零样本推理能力。
 这导致现有的方法仍存在多视角一致性低、零样本风格化能力不佳、训练推理速度较慢、风格化质量不够高等不足。
 \par 有鉴于此，本文将对上述技术问题进行深入研究，提出一种新的2D图像任意风格迁移算法，并提出一种3D场景任意风格迁移算法，以期解决现有风格迁移技术中存在的问题，为文化数字内容的创作提供新的技术支持，从而更好服务数字经济发展大局。
-
+\clearpage
 
 % \begin{enumerate}
 %     \item 删除根目录的 ``.latexmkrc'' 文件，否则编译失败且不报任何错误
@@ -62,9 +62,9 @@
 \par 第三章提出了一种基于风格-内容实例归一化和对比学习的2D图像任意风格迁移算法，对该算法的总体架构、损失函数和训练过程作了详细的介绍，并通过丰富的对比实验和消融实验验证了算法的效果。
 \par 第四章提出了一种基于多分辨率哈希网格和可变3D高斯点的零样本三维场景风格迁移方法，对该算法的模型各部分及损失函数、训练过程作了详细的介绍，并通过实验验证了该方法的有效性。
 \par 第五章总结了本文的工作成果，肯定了一些创新之处，并且对于存在的一些不足进行了阐述，同时对未来工作进行了展望。
-
-\section{本章小结}
-本章首先说明了风格迁移技术研究对于推动文化内容制水平提高、助力数字经济平稳发展的积极意义，然后引出了风格迁移技术的分类、应用场景和研究现状并指出其存在的不足，从而引出本文的研究目标和内容。最后说明了全文的组织架构。  
+\clearpage
+% \section{本章小结}
+% 本章首先说明了风格迁移技术研究对于推动文化内容制水平提高、助力数字经济平稳发展的积极意义，然后引出了风格迁移技术的分类、应用场景和研究现状并指出其存在的不足，从而引出本文的研究目标和内容。最后说明了全文的组织架构。  
 
 \chapter{相关技术介绍}
 风格迁移技术是通过一定的技术手段，把某个艺术载体的内容同另一个载体的艺术风格融合在一起，产出具有新的艺术风格且保留原有内容特征的艺术品的一种技术。
@@ -399,7 +399,7 @@ CLIPstyler~\cite{kwon2022clipstyler}引入了一个文本引导的合成模型�
 决定本文的评估决定从主观和客观两个角度进行评估。其中主观角度采用欺骗分数（Deception Score）。
 欺骗分数表示用户把生成的风格化鉴定为真实艺术图像的比率。
 更高的分数意味着该风格化图像被更高比例人鉴定为真实风格化作品。
-客观角度采用内容保真度（Content Fidelity，CF）, 全局影响分数（Global Effects ，GE）和本地图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
+客观角度采用内容保真度（Content Fidelity，CF）, 全局影响分数（Global Effects ，GE）和局部图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
 保证指标覆盖了感知属性和风格化表现这两个方面，用于二维图像风格迁移的效果评估，采用长短期一致性用于三维图像风格迁移的效果评估，
 并且采用ArtFID~\cite{wright2022artfid}和结构相似性（Structural Similarity，SSIM）~\cite{wang2004image}等指标用于场景风格化后渲染得到的2D风格化图像的质量评估，
 采用短程一致性和长程一致性（Short-range Consistency和Long-range Consistency）~\cite{lai2018learning}用于3D场景的风格化一致性质量评估，下文将对这些指标进行详细解释说明。
@@ -647,12 +647,15 @@ LST~\cite{li2019learning}、AAST~\cite{hu2020aesthetic}、CCPL~\cite{wu2022ccpl}
     \caption{\label{fig:pic_main}方法总览图}
 \end{figure}
 \subsection{AdaIN方法}
-AdaIN~\cite{huang2017arbitrary}提出了自适应实例归一化来对齐内容特征$F_c$的通道均值和方差，以匹配它相应的风格图特征$F_s$。它自适应地从样式输入计算仿射参数，如\autoref{equ:cal_adain}所示：
+AdaIN~\cite{huang2017arbitrary}提出了自适应实例归一化来对齐内容特征$F_c$的通道均值和方差，以匹配它相应的风格图特征$F_s$。它自适应地从样式输入计算仿射参数，
+如\autoref{equ:cal_adain}所示，其中 σ(*)和μ(*) 是对输入张量的空间域计算的标准差和均值。
+给定一个输入批次$x\in R^{N\times C\times H\times W},\mu(x)\text{ 和 }\sigma(x)$可以\autoref{equ:cal_adain_miu_sigma}所示方式计算；
+其中$\epsilon$为一个极小量，其主要作用是防止$\sigma_{nc} (x)$为0。
+\par 经过这一操作，AdaIN可以快速地的让内容图像同风格图像的全局特征对齐。这一方法在任意风格迁移领域有着很大的影响力。
 \begin{equation}
     \label{equ:cal_adain}
     AdaIN(F_c,F_s)=\sigma(F_s)\left(\frac{F_c-\mu(F_c)}{\sigma(F_c)}\right)+\mu(F_s)
 \end{equation}
-其中 σ(*)和μ(*) 是对输入张量的空间域计算的标准差和均值。给定一个输入批次$x\in R^{N\times C\times H\times W},\mu(x)\text{ 和 }\sigma(x)$可以\autoref{equ:cal_adain_miu_sigma}所示方式计算：
 \begin{equation}
     \label{equ:cal_adain_miu_sigma}
     \begin{aligned}
@@ -660,8 +663,7 @@ AdaIN~\cite{huang2017arbitrary}提出了自适应实例归一化来对齐内容�
         &\sigma_{nc}(x) =\sqrt{\frac1{HW}\sum_{h=1}^H\sum_{w=1}^W\left(x_{nchw}-\mu_{nc}(x)\right)^2+\epsilon} 
         \end{aligned}
 \end{equation}
-其中$\epsilon$为一个极小量，其主要作用是防止$\sigma_{nc} (x)$为0。
-\par 经过这一操作，AdaIN可以快速地的让内容图像同风格图像的全局特征对齐。这一方法在任意风格迁移领域有着很大的影响力。
+
 
 \subsection{CA模块结构}
 本节使用的交叉注意力模块（Cross Attention）目的是根据内容图像的语义空间分布，充分且高效地融合风格图像的局部特征属性。
@@ -902,12 +904,13 @@ COCO（Common Objects in Context）数据集是一个由微软公司创建的、
 WikiArt数据集由WikiArt组织创建和维护。它包含来自 195 位不同艺术家的画作。该数据集有 42129 张用于训练的图像和 10628 张用于测试的图像。它具有完善的结构，因此经常被用于艺术生成的机器学习领域。本章主要使用其图像充当风格图像用于训练。
 
 \subsection{评价指标}
-本节将从主观和客观指标两个方面对结果进行评估。主观方面，本节中使用欺骗分数（DS）进行测评：
-作者为每个方法随机选择 20 张合成图像，并邀请了50名受试者参与测评。
+本节将从主观和客观指标两个方面对结果进行评估。
+\clearpage
+主观方面，本节中使用欺骗分数（DS）进行测评：每个方法随机选择 20 张合成图像，并邀请了50名受试者参与测评。
 为了更直观地比较本章所提出的方法的优势，随机选择相同数量的WikiArt图像来询问这50个受试人。
 客观方面，本节将从内容保真程度和人眼感知的两个角度对工作效果进行客观的量化评估。
 遵循在本文第2.4节描述的评价指标，对本文的评估采用内容保真度（Content Fidelity，CF）, 
-全局影响分数（Global Effects ，GE）和本地图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
+全局影响分数（Global Effects ，GE）和局部图样分数（Local Patterns ，LP）~\cite{wang2021evaluate}指标，
 保证指标覆盖了感知和风格化表现这两个方面。其中CF量化计算内容的保护程度，而为了计算方便，本节决定采用GE+LP来衡量对于人眼的感知优劣。
 
 \section{实验结果和分析}
@@ -1015,6 +1018,11 @@ VGG可以有效地捕捉显著的分类特征(如眼睛)。这使得它保留了
 为了证明这一点，使用SANet 作为基线模型，分别使用本章提出的感知编码器和固定的 VGG编码器作为变量，渲染出风格化图和注意力图作为比较，如\autoref{fig:pic_abla_pe}所示。
 
 可以看到，在展示出的风格化结果中，使用VGG编码的结果图含有人眼这一元素，而使用PE编码器得到的风格化图没有这一元素。并且也可以看到，经由VGG得到的注意力图集中在人脸部区域，而经由PE编码器得到的注意力图较为分散。因此可以认为，本章所提出的PE编码器能够有效捕获风格信息，并且避免过多关注风格图像中如人眼这类的显著分类特征。
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=.75\linewidth]{pics/pic_abla_pe_showx.png}
+    \caption{\label{fig:pic_abla_pe}对PE模块的消融实验结果图}
+\end{figure}
 \section{本章小结}
 本章节提出了一种新颖的网络架构，可以生成高质量的风格化图像。具体来说，本章引入了一种新的风格-内容实例归一化（SCIN）方法，将内容特征与特征空间中的风格特征对齐，
 实验证明该模块可以更好地生成视觉协调的纹理结果。然后，本章还提出了一种基于实例的对比学习(ICL)方法来学习风格化到风格化的关系，以提高风格化的质量和减少伪影的产生。
@@ -1025,12 +1033,8 @@ VGG可以有效地捕捉显著的分类特征(如眼睛)。这使得它保留了
 第三小节是实验的设计和参数设定，在文中对采用的实验环境配置、实验设定、实验用数据集、实验的评价指标进行了说明。
 第四小节则对本章提出的方法进行了直观的结果展示，并且也对于许多现有方法进行了对比试验，从定性和定量两个角度对实验结果进行了比对，证明了所提出的方法性能优越。
 同时也对提出的模块分别进行了消融实验，验证了所述方法的有效性。
-\clearpage
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\linewidth]{pics/pic_abla_pe_showx.png}
-    \caption{\label{fig:pic_abla_pe}对PE模块的消融实验结果图}
-\end{figure}
+
+
 % \phantom{\rule{1pt}{9\baselineskip}} % 添加八行不显示的文本
 
 
@@ -1116,11 +1120,11 @@ $\pi$是一组大素数集合，在本文中取\(\pi_{1}:=1,\pi_2=2654435761,\pi
 \par 用线性插值方法根据八个索引检索哈希表得到该点在第$l$级分辨率的
 向量特征\(\mathrm{f}(h(\mu);l)
 \in\mathbb{R}^F\)，
-并且把它们拼接在一起构成一个点的位置编码信息\(f(\mu)\)，
+并且把它们拼接在一起构成一个点的位置编码信息\(F(\mu)\)，
 如\autoref{equ:cal_mrhg_f}所示。
 \begin{equation}
     \label{equ:cal_mrhg_f}
-    f(\mu)=cat([f(h(\mu);0),f(h(\mu);1),\ldots,f(h(\mu);L-1)])\in\mathbb{R}^{L*F}
+    F(\mu)=cat([f(h(\mu);0),f(h(\mu);1),\ldots,f(h(\mu);L-1)])\in\mathbb{R}^{L*F}
 \end{equation}
 
 
